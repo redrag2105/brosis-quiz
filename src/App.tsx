@@ -3,6 +3,7 @@ import { AppProvider } from './context/AppContext';
 import { ROUTES } from './constants';
 import Home from './pages/Home';
 import Registration from './pages/Registration';
+import HouseSelection from './pages/HouseSelection';
 import Quiz from './pages/Quiz';
 import Results from './pages/Results';
 import Leaderboard from './pages/Leaderboard';
@@ -14,6 +15,7 @@ function App() {
         <Routes>
           <Route path={ROUTES.HOME} element={<Home />} />
           <Route path={ROUTES.REGISTRATION} element={<Registration />} />
+          <Route path={ROUTES.HOUSE_SELECTION} element={<HouseSelection />} />
           <Route path={ROUTES.QUIZ} element={<Quiz />} />
           <Route path={ROUTES.RESULTS} element={<Results />} />
           <Route path={ROUTES.LEADERBOARD} element={<Leaderboard />} />

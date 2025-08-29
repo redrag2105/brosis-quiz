@@ -13,7 +13,7 @@ import {
   Sparkles,
   Star,
 } from "lucide-react";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "../context/hooks";
 import { SAMPLE_LEADERBOARD } from "../data/leaderboardData";
 import { ROUTES } from "../constants";
 import { Button } from "../components/ui/button";
@@ -105,7 +105,7 @@ export default function Leaderboard() {
       case "unicorn":
         return "bg-purple-500/20 text-purple-400 border-purple-500/40";
       case "thunderbird":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/40";
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/40";
       case "faerie":
         return "bg-green-500/20 text-green-400 border-green-500/40";
       default:
@@ -239,7 +239,7 @@ export default function Leaderboard() {
                 >
                   <span className="text-cyan-300 font-semibold flex items-center space-x-2">
                     <span>🎯</span>
-                    <span>Thứ hạng c��a bạn: #{userRank}</span>
+                    <span>Thứ hạng của bạn: #{userRank}</span>
                   </span>
                 </motion.div>
               )}

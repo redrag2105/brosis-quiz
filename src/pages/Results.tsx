@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Trophy, Clock, Target, Home, BarChart3, Sparkles, Star, Award } from "lucide-react";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "../context/hooks";
 import { ROUTES } from "../constants";
 import { Button } from "../components/ui/button";
 
@@ -30,7 +30,7 @@ export default function Results() {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full"
+          className="w-16 h-16 border-4 border-amber-500/30 border-t-amber-500 rounded-full"
         />
       </div>
     );
@@ -43,8 +43,8 @@ export default function Results() {
 
   const getScoreColor = (percentage: number) => {
     if (percentage >= 80) return "from-emerald-400 to-green-500";
-    if (percentage >= 60) return "from-cyan-400 to-blue-500";
-    return "from-purple-400 to-pink-500";
+    if (percentage >= 60) return "from-amber-400 to-orange-500";
+    return "from-orange-400 to-red-500";
   };
 
   const getScoreMessage = (percentage: number) => {
@@ -63,7 +63,7 @@ export default function Results() {
   const floatingElements = [...Array(12)].map((_, i) => ({
     id: i,
     icon: [<Star className="w-4 h-4" />, <Sparkles className="w-3 h-3" />, <Award className="w-4 h-4" />][i % 3],
-    color: ['text-cyan-400', 'text-purple-400', 'text-yellow-400', 'text-pink-400'][i % 4],
+    color: ['text-amber-400', 'text-orange-400', 'text-yellow-400', 'text-red-400'][i % 4],
     x: Math.random() * 100,
     y: Math.random() * 100,
     delay: Math.random() * 3,
@@ -166,7 +166,7 @@ export default function Results() {
           className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-3xl shadow-2xl p-8 max-w-2xl w-full relative overflow-hidden"
         >
           {/* Card background glow */}
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-yellow-500/5 rounded-3xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-yellow-500/5 rounded-3xl"></div>
 
           {/* Header */}
           <div className="text-center mb-8 relative z-10">
@@ -176,9 +176,9 @@ export default function Results() {
               transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
               className="relative mx-auto mb-6"
             >
-              <div className="w-24 h-24 bg-gradient-to-r from-cyan-500 via-purple-500 to-yellow-500 rounded-full flex items-center justify-center relative">
+              <div className="w-24 h-24 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 rounded-full flex items-center justify-center relative">
                 <Trophy className="w-12 h-12 text-white" />
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-yellow-500 rounded-full blur-xl opacity-60 animate-pulse"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 rounded-full blur-xl opacity-60 animate-pulse"></div>
               </div>
               {percentage >= 80 && (
                 <motion.div
@@ -196,7 +196,7 @@ export default function Results() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
-              className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-yellow-400 bg-clip-text text-transparent mb-3"
+              className="text-4xl font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent mb-3"
             >
               Kết quả tuyệt vời!
             </motion.h1>
@@ -208,7 +208,7 @@ export default function Results() {
               className="text-slate-300 text-lg"
             >
               Chúc mừng{" "}
-              <span className="font-semibold text-cyan-400">
+              <span className="font-semibold text-amber-400">
                 {state.studentInfo.ten}
               </span>
               ! 🎉
@@ -335,7 +335,7 @@ export default function Results() {
 
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link to={ROUTES.LEADERBOARD}>
-                <Button className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white py-3">
+                <Button className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3">
                   <BarChart3 className="w-4 h-4" />
                   <span>Bảng xếp hạng</span>
                 </Button>

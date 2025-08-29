@@ -56,4 +56,6 @@ function Button({
   )
 }
 
-export { Button, buttonVariants }
+Button.displayName = "Button"
+
+export { Button }

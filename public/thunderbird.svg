@@ -1,0 +1,34 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="thunderbirdGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="lightningGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#dbeafe;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Thunderbird wings -->
+  <path d="M8 35 Q12 25, 25 30 Q30 32, 32 35 Q30 38, 25 40 Q12 45, 8 35 Z" fill="url(#thunderbirdGradient)"/>
+  <path d="M56 35 Q52 25, 39 30 Q34 32, 32 35 Q34 38, 39 40 Q52 45, 56 35 Z" fill="url(#thunderbirdGradient)"/>
+  
+  <!-- Thunderbird body -->
+  <ellipse cx="32" cy="35" rx="6" ry="10" fill="url(#thunderbirdGradient)"/>
+  
+  <!-- Thunderbird head -->
+  <circle cx="32" cy="25" r="5" fill="url(#thunderbirdGradient)"/>
+  
+  <!-- Lightning bolts -->
+  <path d="M25 15 L22 25 L27 25 L24 35 L29 25 L24 25 L27 15 Z" fill="url(#lightningGradient)" opacity="0.9"/>
+  <path d="M40 15 L37 25 L42 25 L39 35 L44 25 L39 25 L42 15 Z" fill="url(#lightningGradient)" opacity="0.9"/>
+  
+  <!-- Electric aura -->
+  <circle cx="32" cy="32" r="18" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.3"/>
+  <circle cx="32" cy="32" r="22" fill="none" stroke="#3b82f6" stroke-width="0.5" opacity="0.2"/>
+  
+  <!-- Eyes -->
+  <circle cx="29" cy="24" r="1.5" fill="#ffffff"/>
+  <circle cx="35" cy="24" r="1.5" fill="#ffffff"/>
+</svg>
