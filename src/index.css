@@ -1,5 +1,48 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Local clock font */
+@font-face {
+  font-family: "Clock";
+  src: url("/fonts/clock.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --animate-shine: shine 5s linear infinite;
+  --animate-gradient: gradient 8s linear infinite;
+
+  @keyframes shine {
+    0% {
+      background-position: 100%;
+    }
+    100% {
+      background-position: -100%;
+    }
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+}
+
+.font-clock {
+  font-family: "Clock", "Inter", sans-serif;
+  letter-spacing: 0.05em;
+}
 
 /* Custom scrollbar for dark theme */
 ::-webkit-scrollbar {
@@ -348,4 +391,13 @@ button:focus {
 * {
   transition: color 0.3s ease, background-color 0.3s ease,
     border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

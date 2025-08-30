@@ -7,6 +7,8 @@ import { Button } from "../components/ui/button";
 import { Avatar } from "../components/avatar/Avatar";
 import type { AvatarConfig, House } from "../types";
 import { ROUTES } from "../constants";
+import GradientText from "@/components/gradient-text";
+import { TextMorph } from "@/components/ui/text-morph";
 
 const HOUSES: { key: House; label: string; img: string }[] = [
   { key: "faerie", label: "Faerie", img: "/characters/Skin/faerie.svg" },
@@ -60,6 +62,13 @@ export default function AvatarBuilder() {
   const config = state.avatar;
   const selectedHouse = state.studentInfo?.nha ?? "faerie";
 
+  const nameGradientByHouse: Record<House, string> = {
+    phoenix: "from-yellow-900 via-orange-500 to-amber-400",
+    faerie: "from-green-900 via-green-500 to-emerald-100",
+    thunderbird: "from-yellow-900 via-yellow-600 to-amber-200",
+    unicorn: "from-pink-900 via-fuchsia-500 to-rose-200",
+  };
+
   useEffect(() => {
     if (!state.studentInfo) {
       navigate(ROUTES.REGISTRATION);
@@ -90,6 +99,7 @@ export default function AvatarBuilder() {
       accessory: state.avatar.accessory,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const url = (import.meta as any).env?.VITE_SUBMIT_URL as string | undefined;
     try {
       if (url) {
@@ -110,9 +120,19 @@ export default function AvatarBuilder() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-8">
         <div className="mb-6 text-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
+          <GradientText
+            colors={["#fbbf24", "#f97316", "#fde047"]}
+            animationSpeed={3}
+            showBorder={false}
+            className="text-3xl font-bold"
+          >
             Tuỳ chỉnh Avatar
-          </h1>
+          </GradientText>
+
+          {/* <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-400 via-orange-500 to-yellow-300 bg-clip-text text-transparent">
+            Tuỳ chỉnh Avatar
+          </h1> */}
+
           <p className="text-slate-400 mt-1">
             Chọn nhà và phụ kiện cho nhân vật của bạn
           </p>
@@ -126,8 +146,8 @@ export default function AvatarBuilder() {
             transition={{ duration: 0.5 }}
             className="bg-slate-800/40 mt-20 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 flex flex-col"
           >
-            {/* Red box area (preview) */}
-            <div className="rounded-xl p-4 flex items-center justify-center min-h-[240px]">
+            {/* Preview */}
+            <div className="rounded-xl border-2 border-slate-700/60 p-4 flex items-center justify-center min-h-[240px]">
               <Avatar config={config} baseSkin={selectedHouse} size={220} />
             </div>
 
@@ -156,9 +176,16 @@ export default function AvatarBuilder() {
 
             {/* Decorative name text */}
             <div className="mt-3 text-center">
-              <div className="text-2xl font-extrabold bg-gradient-to-r from-yellow-900 via-orange-500 to-amber-400 bg-clip-text text-transparent drop-shadow-sm">
+              {/* <div
+                className={`text-2xl font-extrabold bg-clip-text text-transparent drop-shadow-sm bg-gradient-to-r ${nameGradientByHouse[selectedHouse]}`}
+              > */}
+              {/* @ts-expect-error loi k biet sua s :))*/}
+              <TextMorph
+                className={`text-2xl font-extrabold bg-clip-text text-transparent drop-shadow-sm bg-gradient-to-r ${nameGradientByHouse[selectedHouse]}`}
+              >
                 {HOUSES.find((h) => h.key === selectedHouse)?.label}
-              </div>
+              </TextMorph>
+              {/* </div> */}
             </div>
           </motion.div>
 

@@ -18,6 +18,7 @@ import { SAMPLE_QUIZ_QUESTIONS } from "../data/quizData";
 import { ROUTES, QUIZ_CONFIG } from "../constants";
 import { Button } from "../components/ui/button";
 import { Avatar } from "../components/avatar/Avatar";
+import type { House } from "../types";
 
 export default function Quiz() {
   const navigate = useNavigate();
@@ -26,6 +27,21 @@ export default function Quiz() {
   const [startTime] = useState(Date.now());
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+
+  const houseKey: House = state.studentInfo?.nha ?? "faerie";
+  const HOUSE_LABEL_MAP: Record<House, string> = {
+    phoenix: "Phoenix",
+    faerie: "Faerie",
+    thunderbird: "ThunderBird",
+    unicorn: "Unicorn",
+  };
+  const HOUSE_BADGE_COLORS: Record<House, string> = {
+    phoenix: "bg-orange-500/20 border-orange-500/40 text-orange-300",
+    faerie: "bg-emerald-500/20 border-emerald-500/40 text-emerald-300",
+    thunderbird: "bg-yellow-400/20 border-yellow-400/40 text-yellow-300",
+    unicorn: "bg-pink-500/20 border-pink-500/40 text-pink-300",
+  };
+  const houseLabel = HOUSE_LABEL_MAP[houseKey];
 
   const currentQuestion = SAMPLE_QUIZ_QUESTIONS[state.currentQuestionIndex];
   const answeredCount = state.answers.length;
@@ -205,9 +221,14 @@ export default function Quiz() {
                 className="border border-slate-600 rounded-full"
               />
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
-                  {state.studentInfo.ten}
-                </h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                    {state.studentInfo.ten}
+                  </h1>
+                  <span className={`px-2 py-1 rounded-full text-xs border inline-flex items-center ${HOUSE_BADGE_COLORS[houseKey]}`}>
+                    {houseLabel}
+                  </span>
+                </div>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="px-2 py-1 rounded-full text-xs bg-slate-700/40 border border-slate-600 text-slate-300 inline-flex items-center gap-1">
                     <Users className="w-3 h-3" /> Lớp {state.studentInfo.lop}
@@ -381,7 +402,7 @@ export default function Quiz() {
                 </div>
                 <div className="flex items-center space-x-2 pt-1">
                   <Clock className="w-4 h-4 text-amber-400" />
-                  <span className="text-amber-400 font-semibold">
+                  <span className="text-amber-400 font-semibold font-clock tabular-nums tracking-wider text-lg">
                     {String(Math.floor(elapsed / 60)).padStart(2, "0")}:
                     {String(elapsed % 60).padStart(2, "0")}
                   </span>
@@ -541,7 +562,7 @@ export default function Quiz() {
       </div>
 
       {/* Fixed Navigation Bar */}
-      <div className="fixed xl:bottom-40 bottom-1 left-0 right-0 z-20 ">
+      <div className="fixed xl:bottom-36 bottom-1 left-0 right-0 z-20 ">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           {state.currentQuestionIndex > 0 ? (
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
