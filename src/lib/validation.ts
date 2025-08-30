@@ -7,12 +7,7 @@ export const studentRegistrationSchema = z.object({
     .max(50, "Tên không được quá 50 ký tự")
     .regex(/^[a-zA-ZÀ-ỹ\s]+$/, "Tên chỉ được chứa chữ cái và khoảng trắng"),
 
-  mssv: z
-    .string()
-    .regex(
-      /^[A-Z]{2}\d{6}$/,
-      "MSSV phải có định dạng XX123456 (2 chữ cái + 6 số)"
-    ),
+  mssv: z.string().regex(/^[A-Z]{2}\d{6}$/, "MSSV sai mẹ định dạng r"),
 
   sdt: z.string().regex(/^(0|\+84)[1-9]\d{8}$/, "Số điện thoại không hợp lệ"),
 

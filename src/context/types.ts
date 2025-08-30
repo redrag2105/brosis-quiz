@@ -1,4 +1,4 @@
-import type { StudentInfo, QuizAnswer, QuizResult } from '../types';
+import type { StudentInfo, QuizAnswer, QuizResult, AvatarConfig } from '../types';
 
 // Application state interface
 export interface AppState {
@@ -9,14 +9,17 @@ export interface AppState {
   isQuizCompleted: boolean;
   quizResult: QuizResult | null;
   timeRemaining: number;
+  avatar: AvatarConfig;
 }
 
 // Action types
 export type AppAction =
   | { type: 'SET_STUDENT_INFO'; payload: StudentInfo }
+  | { type: 'SET_AVATAR'; payload: AvatarConfig }
   | { type: 'START_QUIZ'; payload: { startTime: Date } }
   | { type: 'NEXT_QUESTION' }
   | { type: 'PREV_QUESTION' }
+  | { type: 'SET_QUESTION_INDEX'; payload: number }
   | { type: 'SET_ANSWER'; payload: QuizAnswer }
   | { type: 'COMPLETE_QUIZ'; payload: QuizResult }
   | { type: 'RESET_QUIZ' }
@@ -32,6 +35,9 @@ export const initialState: AppState = {
   isQuizCompleted: false,
   quizResult: null,
   timeRemaining: 30 * 60 * 1000, // 30 minutes in milliseconds
+  avatar: {
+    accessory: 'none',
+  },
 };
 
 // Reducer function
@@ -42,6 +48,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         studentInfo: action.payload,
       };
+    case 'SET_AVATAR': {
+      const updatedStudent = state.studentInfo
+        ? { ...state.studentInfo, avatar: action.payload }
+        : state.studentInfo;
+      return { ...state, avatar: action.payload, studentInfo: updatedStudent };
+    }
 
     case 'START_QUIZ':
       return {
@@ -62,6 +74,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         currentQuestionIndex: Math.max(state.currentQuestionIndex - 1, 0),
+      };
+
+    case 'SET_QUESTION_INDEX':
+      return {
+        ...state,
+        currentQuestionIndex: Math.max(0, Math.min(action.payload, 20)),
       };
 
     case 'SET_ANSWER': {

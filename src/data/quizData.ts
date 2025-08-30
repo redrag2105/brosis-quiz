@@ -3,9 +3,12 @@ import type { QuizQuestion } from "../types";
 export const SAMPLE_QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: "1",
-    question: "Bạn cảm thấy thoải mái hơn khi:",
+    question:
+      "Bạn cảm thấy thoải mái hơn khi:elect stay ran truth greater women birthday noise feathers potatoes locate cry bill test",
     options: [
       "Các quyết định được đưa ra và mọi thứ đã được giải quyết.",
+      "Mọi thứ còn mở và khả năng vẫn đang được khám phá.",
+      "Mọi thứ còn mở và khả năng vẫn đang được khám phá.",
       "Mọi thứ còn mở và khả năng vẫn đang được khám phá.",
     ],
     correctAnswer: 0,
@@ -193,22 +196,15 @@ export const SAMPLE_QUIZ_QUESTIONS: QuizQuestion[] = [
   },
   {
     id: "20",
-    question: "Bạn cảm thấy hài lòng nhất khi:",
+    question:
+      "building eleven sweet stage range feet fast mix garden outline does understanding pattern minute sort lungs fed husband work there anyone small top applied",
     options: [
       "Hoàn thành một nhiệm vụ một cách hoàn hảo.",
+      "Tạo ra được điều gì đó mới và độc đáo.",
+      "Tạo ra được điều gì đó mới và độc đáo.",
       "Tạo ra được điều gì đó mới và độc đáo.",
     ],
     correctAnswer: 0,
     category: "satisfaction",
-  },
-  {
-    id: "21",
-    question: "Khi đối mặt với thay đổi, bạn:",
-    options: [
-      "Cần thời gian để thích nghi và chuẩn bị.",
-      "Hứng thú và sẵn sàng đón nhận ngay lập tức.",
-    ],
-    correctAnswer: 1,
-    category: "change-adaptation",
   },
 ];

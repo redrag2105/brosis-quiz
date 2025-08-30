@@ -22,7 +22,7 @@
 
 /* Global styles */
 * {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 body {
@@ -31,22 +31,39 @@ body {
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #0f172a;
+  /* background: #0f172a; */
+  background-image: url("bg.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
   color: #e2e8f0;
 }
 
 /* Dark theme gradient backgrounds */
 .bg-dark-gradient {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 100%);
+  background: linear-gradient(
+    135deg,
+    #0f172a 0%,
+    #1e293b 25%,
+    #334155 50%,
+    #475569 100%
+  );
 }
 
 .bg-cyber-gradient {
-  background: linear-gradient(135deg, #f59e0b 0%, #f97316 25%, #fb923c 50%, #fdba74 100%);
+  background: linear-gradient(
+    135deg,
+    #f59e0b 0%,
+    #f97316 25%,
+    #fb923c 50%,
+    #fdba74 100%
+  );
 }
 
 .bg-grid-pattern {
-  background-image:
-    linear-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px),
+  background-image: linear-gradient(
+      rgba(245, 158, 11, 0.1) 1px,
+      transparent 1px
+    ),
     linear-gradient(90deg, rgba(245, 158, 11, 0.1) 1px, transparent 1px);
   background-size: 50px 50px;
 }
@@ -57,7 +74,8 @@ body {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
   25% {
@@ -76,7 +94,8 @@ body {
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.5;
     transform: scale(1);
   }
@@ -104,10 +123,15 @@ body {
 }
 
 @keyframes bounce-slow {
-  0%, 20%, 53%, 80%, 100% {
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
     transform: translate3d(0, 0, 0);
   }
-  40%, 43% {
+  40%,
+  43% {
     transform: translate3d(0, -15px, 0);
   }
   70% {
@@ -170,7 +194,7 @@ button:focus {
 }
 
 .radio-dark:checked::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -190,7 +214,7 @@ button:focus {
 }
 
 .btn-cyber::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, #d97706, #ea580c);
@@ -218,8 +242,12 @@ button:focus {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Gradient text utilities */
@@ -239,19 +267,34 @@ button:focus {
 
 /* Particle animation backgrounds */
 .particles-bg::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background-image:
-    radial-gradient(circle at 25% 25%, rgba(245, 158, 11, 0.1) 0%, transparent 25%),
-    radial-gradient(circle at 75% 75%, rgba(249, 115, 22, 0.1) 0%, transparent 25%),
-    radial-gradient(circle at 50% 50%, rgba(251, 146, 60, 0.1) 0%, transparent 25%);
+  background-image: radial-gradient(
+      circle at 25% 25%,
+      rgba(245, 158, 11, 0.1) 0%,
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 75% 75%,
+      rgba(249, 115, 22, 0.1) 0%,
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(251, 146, 60, 0.1) 0%,
+      transparent 25%
+    );
   animation: particles 20s linear infinite;
 }
 
 @keyframes particles {
-  0% { transform: translateY(0px) rotate(0deg); }
-  100% { transform: translateY(-100vh) rotate(360deg); }
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-100vh) rotate(360deg);
+  }
 }
 
 /* Interactive hover effects */
@@ -277,9 +320,7 @@ button:focus {
 
 .card-hover:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow:
-    0 25px 50px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(245, 158, 11, 0.2),
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(245, 158, 11, 0.2),
     inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
@@ -305,5 +346,6 @@ button:focus {
 
 /* Smooth transitions for all elements */
 * {
-  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease,
+    border-color 0.3s ease, box-shadow 0.3s ease;
 }

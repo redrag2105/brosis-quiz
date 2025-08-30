@@ -1,5 +1,10 @@
 export type House = 'faerie' | 'phoenix' | 'thunderbird' | 'unicorn';
 
+export interface AvatarConfig {
+  // Only accessory remains; rendered over the selected house skin asset
+  accessory: string; // e.g., 'none', 'hat3', 'glasses2'
+}
+
 export interface StudentInfo {
   ten: string;
   mssv: string;
@@ -7,6 +12,7 @@ export interface StudentInfo {
   lop: string;
   nha: House;
   daiDoi: string;
+  avatar?: AvatarConfig;
 }
 
 export interface QuizQuestion {

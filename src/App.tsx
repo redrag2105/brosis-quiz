@@ -1,12 +1,12 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AppProvider } from './context/AppContext';
-import { ROUTES } from './constants';
-import Home from './pages/Home';
-import Registration from './pages/Registration';
-import HouseSelection from './pages/HouseSelection';
-import Quiz from './pages/Quiz';
-import Results from './pages/Results';
-import Leaderboard from './pages/Leaderboard';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AppProvider } from "./context/AppContext";
+import { ROUTES } from "./constants";
+import Home from "./pages/Home";
+import Registration from "./pages/Registration";
+import Quiz from "./pages/Quiz";
+import Results from "./pages/Results";
+import Leaderboard from "./pages/Leaderboard";
+import AvatarBuilder from "./pages/AvatarBuilder";
 
 function App() {
   return (
@@ -15,10 +15,10 @@ function App() {
         <Routes>
           <Route path={ROUTES.HOME} element={<Home />} />
           <Route path={ROUTES.REGISTRATION} element={<Registration />} />
-          <Route path={ROUTES.HOUSE_SELECTION} element={<HouseSelection />} />
           <Route path={ROUTES.QUIZ} element={<Quiz />} />
           <Route path={ROUTES.RESULTS} element={<Results />} />
           <Route path={ROUTES.LEADERBOARD} element={<Leaderboard />} />
+          <Route path={ROUTES.AVATAR} element={<AvatarBuilder />} />
         </Routes>
       </Router>
     </AppProvider>

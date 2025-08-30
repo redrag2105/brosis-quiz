@@ -11,6 +11,7 @@ import {
   School,
   Home,
   Users,
+  ArrowRight,
 } from "lucide-react";
 import { useAppContext } from "../context/hooks";
 import {
@@ -30,20 +31,17 @@ export default function Registration() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<Omit<StudentRegistrationForm, "nha">>({
     resolver: zodResolver(studentRegistrationSchema.omit({ nha: true })),
   });
 
   const onSubmit = async (data: Omit<StudentRegistrationForm, "nha">) => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
     dispatch({
       type: "SET_STUDENT_INFO",
       payload: { ...data, nha: "phoenix" as House },
     });
-    navigate(ROUTES.HOUSE_SELECTION);
+    navigate(ROUTES.AVATAR);
   };
 
   const floatingElements = [...Array(8)].map((_, i) => ({
@@ -113,7 +111,7 @@ export default function Registration() {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -340,7 +338,7 @@ export default function Registration() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.5 }}
-              className="pt-4 relative"
+              className="pt-4 relative w-60 mx-auto"
             >
               {/* Floating sparkles around button */}
               <div className="absolute inset-0 pointer-events-none">
@@ -349,7 +347,7 @@ export default function Registration() {
                     key={`button-sparkle-${i}`}
                     className="absolute text-amber-400/60"
                     style={{
-                      left: `${20 + (i * 10)}%`,
+                      left: `${20 + i * 10}%`,
                       top: `${10 + (i % 2) * 60}%`,
                     }}
                     animate={{
@@ -373,7 +371,7 @@ export default function Registration() {
               <motion.div
                 whileHover={{
                   scale: 1.05,
-                  transition: { duration: 0.3, ease: "easeOut" }
+                  transition: { duration: 0.3, ease: "easeOut" },
                 }}
                 whileTap={{ scale: 0.95 }}
                 className="relative"
@@ -394,8 +392,7 @@ export default function Registration() {
 
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="w-full relative cursor-pointer bg-gradient-to-r text-lg from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:via-orange-400 hover:to-amber-500 text-white font-bold py-6 px-8 rounded-2xl transition-all duration-500 disabled:opacity-50 overflow-hidden group shadow-2xl shadow-amber-500/25"
+                  className="w-60 relative cursor-pointer bg-gradient-to-r text-lg from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:via-orange-400 hover:to-amber-500 text-white font-bold py-6 px-8 rounded-2xl transition-all duration-500 overflow-hidden group shadow-2xl shadow-amber-500/25"
                 >
                   {/* Animated background layers */}
                   <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -404,7 +401,7 @@ export default function Registration() {
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                     animate={{
-                      x: ['-100%', '100%'],
+                      x: ["-100%", "100%"],
                     }}
                     transition={{
                       duration: 2,
@@ -416,47 +413,22 @@ export default function Registration() {
 
                   {/* Button content */}
                   <span className="relative z-10 flex items-center justify-center space-x-3">
-                    {isSubmitting ? (
-                      <>
-                        <motion.div
-                          className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full"
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        />
-                        <span className="text-lg">Đang xử lý...</span>
-                      </>
-                    ) : (
-                      <>
-                        <motion.div
-                          animate={{
-                            rotate: [0, 5, -5, 0],
-                            scale: [1, 1.1, 1],
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                          }}
-                        >
-                          <Sparkles className="w-6 h-6" />
-                        </motion.div>
-                        <span className="text-lg tracking-wide">Chọn nhà của bạn</span>
-                        <motion.div
-                          animate={{
-                            rotate: [0, -5, 5, 0],
-                            scale: [1, 1.1, 1],
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                            delay: 1,
-                          }}
-                        >
-                          <Sparkles className="w-6 h-6" />
-                        </motion.div>
-                      </>
-                    )}
+                    <span className="text-lg tracking-wide">Tiếp tục</span>
+                    <motion.div
+                      animate={{
+                        rotate: [0, -5, 5, 0],
+                        scale: [1, 1.1, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 1,
+                      }}
+                      whileHover={{ translateX: 5 }}
+                    >
+                      <ArrowRight className="w-6 h-6" />
+                    </motion.div>
                   </span>
 
                   {/* Magical particle effects on hover */}
@@ -487,25 +459,24 @@ export default function Registration() {
               </motion.div>
             </motion.div>
           </form>
-
-          {/* Back button */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2, duration: 0.5 }}
-            className="mt-6 text-center relative z-20"
+        </motion.div>
+        {/* Back button */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.5 }}
+          className="mt-6 text-center relative z-20"
+        >
+          <motion.button
+            whileHover={{ x: -5, scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate(ROUTES.HOME)}
+            className="text-slate-400 hover:text-amber-400 text-sm font-medium transition-all duration-200 flex items-center space-x-2 mx-auto cursor-pointer bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-600/50 hover:border-amber-500/50 backdrop-blur-sm"
+            style={{ pointerEvents: "auto" }}
           >
-            <motion.button
-              whileHover={{ x: -5, scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate(ROUTES.HOME)}
-              className="text-slate-400 hover:text-amber-400 text-sm font-medium transition-all duration-200 flex items-center space-x-2 mx-auto cursor-pointer bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-600/50 hover:border-amber-500/50 backdrop-blur-sm"
-              style={{ pointerEvents: "auto" }}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Quay về trang chủ</span>
-            </motion.button>
-          </motion.div>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Quay về trang chủ</span>
+          </motion.button>
         </motion.div>
       </div>
     </div>

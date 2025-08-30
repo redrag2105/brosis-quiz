@@ -166,7 +166,7 @@ export default function Results() {
           className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-3xl shadow-2xl p-8 max-w-2xl w-full relative overflow-hidden"
         >
           {/* Card background glow */}
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-yellow-500/5 rounded-3xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-yellow-500/5 rounded-3xl pointer-events-none"></div>
 
           {/* Header */}
           <div className="text-center mb-8 relative z-10">
@@ -222,7 +222,7 @@ export default function Results() {
             transition={{ delay: 0.6, duration: 0.6 }}
             className="bg-gradient-to-br from-slate-700/40 to-slate-800/40 border border-slate-600/50 rounded-2xl p-8 mb-8 backdrop-blur-sm relative overflow-hidden"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5 rounded-2xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5 rounded-2xl pointer-events-none"></div>
 
             <div className="text-center relative z-10">
               <motion.div
@@ -259,7 +259,7 @@ export default function Results() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.6 }}
-            className="grid grid-cols-2 gap-6 mb-8"
+            className="grid grid-cols-2 gap-6 mb-8 relative z-10"
           >
             <motion.div
               whileHover={{ scale: 1.05, y: -5 }}
@@ -287,7 +287,7 @@ export default function Results() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1, duration: 0.6 }}
-            className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-6 mb-8 backdrop-blur-sm"
+            className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-6 mb-8 backdrop-blur-sm relative z-10"
           >
             <h3 className="font-semibold text-white mb-4 flex items-center space-x-2">
               <span>👤</span>
@@ -320,7 +320,7 @@ export default function Results() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.6 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4"
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10"
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button

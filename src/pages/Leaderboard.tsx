@@ -18,6 +18,7 @@ import { SAMPLE_LEADERBOARD } from "../data/leaderboardData";
 import { ROUTES } from "../constants";
 import { Button } from "../components/ui/button";
 import type { LeaderboardEntry } from "../types";
+import { Avatar } from "../components/avatar/Avatar";
 
 export default function Leaderboard() {
   const { state } = useAppContext();
@@ -375,10 +376,11 @@ export default function Leaderboard() {
                         <td className="py-5 px-4">
                           <div>
                             <div
-                              className={`font-semibold flex items-center space-x-2 ${
+                              className={`font-semibold flex items-center space-x-3 ${
                                 isCurrentUser ? "text-cyan-300" : "text-white"
                               }`}
                             >
+                              <Avatar baseSkin={entry.studentInfo.nha} config={{ accessory: entry.studentInfo.avatar?.accessory ?? 'none' }} size={28} className="border border-slate-600 rounded-full" />
                               <span>{entry.studentInfo.ten}</span>
                               {isCurrentUser && (
                                 <motion.span

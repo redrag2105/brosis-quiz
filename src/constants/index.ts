@@ -3,7 +3,7 @@ export const HOUSE_OPTIONS = [
     value: "faerie",
     label: "Faerie",
     icon: "🧚",
-    svgIcon: "/faerie.svg", // Add faerie.svg to public folder
+    svgIcon: "/test2.svg", // Add faerie.svg to public folder
     color: "from-emerald-400 to-green-500",
     bgColor: "bg-emerald-500/20",
     borderColor: "border-emerald-500/40",
@@ -46,7 +46,7 @@ export const HOUSE_OPTIONS = [
 ] as const;
 
 export const QUIZ_CONFIG = {
-  TOTAL_QUESTIONS: 21,
+  TOTAL_QUESTIONS: 20,
   TIME_LIMIT_MINUTES: 30,
 } as const;
 
@@ -57,4 +57,5 @@ export const ROUTES = {
   QUIZ: "/quiz",
   RESULTS: "/results",
   LEADERBOARD: "/leaderboard",
+  AVATAR: "/avatar",
 } as const;
