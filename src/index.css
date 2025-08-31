@@ -392,12 +392,3 @@ button:focus {
   transition: color 0.3s ease, background-color 0.3s ease,
     border-color 0.3s ease, box-shadow 0.3s ease;
 }
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}

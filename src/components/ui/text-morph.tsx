@@ -1,7 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { motion, type Transition, type Variants } from "framer-motion";
-import { useMemo, useId } from "react";
+import { useMemo, useId, memo } from "react";
 
 export type TextMorphProps = {
   children: string;
@@ -12,7 +12,7 @@ export type TextMorphProps = {
   transition?: Transition;
 };
 
-export function TextMorph({
+export const TextMorph = memo(function TextMorph({
   children,
   as: Component = "p",
   className,
@@ -23,11 +23,14 @@ export function TextMorph({
   const uniqueId = useId();
 
   const characters = useMemo(() => {
-    return children.split("").map((char, index) => ({
-      id: `${uniqueId}-${index}`,
-      label: char === " " ? "\u00A0" : char,
-      index,
-    }));
+    return children.split("").map((char, index) => {
+      const label = char === " " ? "\u00A0" : char;
+      return {
+        id: `${uniqueId}-${index}-${label}`,
+        label,
+        index,
+      };
+    });
   }, [children, uniqueId]);
 
   const defaultVariants: Variants = {
@@ -54,10 +57,12 @@ export function TextMorph({
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const MotionComponent: any = motion(Component as any);
+  const MotionComponent: any = useMemo(() => motion(Component as any), [Component]);
+  const textKey = children;
 
   return (
     <MotionComponent
+      key={textKey}
       className={cn(className)}
       aria-label={children}
       style={style}
@@ -79,4 +84,4 @@ export function TextMorph({
       ))}
     </MotionComponent>
   );
-}
+});

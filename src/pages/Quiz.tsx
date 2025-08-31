@@ -8,7 +8,6 @@ import {
   Sparkles,
   Star,
   Zap,
-  Clock,
   Users,
   Home,
 } from "lucide-react";
@@ -45,6 +44,9 @@ export default function Quiz() {
 
   const currentQuestion = SAMPLE_QUIZ_QUESTIONS[state.currentQuestionIndex];
   const answeredCount = state.answers.length;
+  const isLastQuestion =
+    state.currentQuestionIndex === QUIZ_CONFIG.TOTAL_QUESTIONS - 1;
+  const allAnswered = answeredCount === QUIZ_CONFIG.TOTAL_QUESTIONS;
   const progress = (answeredCount / QUIZ_CONFIG.TOTAL_QUESTIONS) * 100;
 
   useEffect(() => {
@@ -89,7 +91,7 @@ export default function Quiz() {
       dispatch({ type: "NEXT_QUESTION" });
       setSelectedAnswer(null);
     } else {
-      // Complete quiz
+      if (!allAnswered) return;
       const correctAnswers = state.answers.filter(
         (answer) => answer.isCorrect
       ).length;
@@ -225,7 +227,9 @@ export default function Quiz() {
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
                     {state.studentInfo.ten}
                   </h1>
-                  <span className={`px-2 py-1 rounded-full text-xs border inline-flex items-center ${HOUSE_BADGE_COLORS[houseKey]}`}>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs border inline-flex items-center ${HOUSE_BADGE_COLORS[houseKey]}`}
+                  >
                     {houseLabel}
                   </span>
                 </div>
@@ -381,7 +385,7 @@ export default function Quiz() {
               </div>
 
               {/* Legend */}
-              <div className="mt-6 pt-4 border-t border-slate-700/50 flex gap-20">
+              <div className="mt-6 pt-4 border-t border-slate-700/50 flex gap-25">
                 <div className="space-y-2 text-xs">
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded border"></div>
@@ -401,8 +405,7 @@ export default function Quiz() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2 pt-1">
-                  <Clock className="w-4 h-4 text-amber-400" />
-                  <span className="text-amber-400 font-semibold font-clock tabular-nums tracking-wider text-lg">
+                  <span className="font-bold font-clock tabular-nums tracking-wider text-4xl bg-gradient-to-r from-amber-600 via-yellow-500 to-orange-400 bg-clip-text text-transparent">
                     {String(Math.floor(elapsed / 60)).padStart(2, "0")}:
                     {String(elapsed % 60).padStart(2, "0")}
                   </span>
@@ -426,7 +429,7 @@ export default function Quiz() {
                   <motion.h2
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2, duration: 0.6 }}
+                    transition={{ delay: 0.2, duration: 0.3 }}
                     className="text-2xl font-semibold text-white mb-6 leading-relaxed"
                   >
                     {currentQuestion.question}
@@ -438,7 +441,7 @@ export default function Quiz() {
                         key={index}
                         initial={{ opacity: 0, x: 30 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4 + index * 0.1, duration: 0.5 }}
+                        transition={{ delay: 0.1 + index * 0.1, duration: 0.3 }}
                         whileHover={{
                           scale: 1.02,
                           x: 5,
@@ -582,6 +585,7 @@ export default function Quiz() {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Button
               onClick={handleNext}
+              disabled={isLastQuestion && !allAnswered}
               className="flex items-center text-lg rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white disabled:opacity-50 py-5 relative overflow-hidden group"
             >
               <span>
