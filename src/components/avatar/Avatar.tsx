@@ -2,6 +2,10 @@ import type { AvatarConfig, House } from "../../types";
 import { cn } from "../../lib/utils";
 import gsap from "gsap";
 import { useEffect, useLayoutEffect, useRef, useState, useId } from "react";
+import type React from "react";
+
+type SvgImageProps = React.SVGProps<SVGImageElement> & { href: string };
+const SvgImage = (props: SvgImageProps) => <image {...props} />;
 
 interface AvatarProps {
   config: AvatarConfig;
@@ -181,9 +185,7 @@ export function Avatar({
         </defs>
 
         {prevSkin && (
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore - href valid in SVG
-          <image
+          <SvgImage
             id={`skin-prev-${uid}`}
             href={`/characters/Skin/${prevSkin}.svg`}
             x={s * 0.1}
@@ -194,9 +196,7 @@ export function Avatar({
             opacity={1}
           />
         )}
-        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-        {/* @ts-ignore - href valid in SVG */}
-        <image
+        <SvgImage
           id={`skin-current-${uid}`}
           href={`/characters/Skin/${currentSkin}.svg`}
           x={s * 0.1}
@@ -210,9 +210,7 @@ export function Avatar({
         />
 
         {prevAcc && prevAcc !== "none" && (
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore - href valid in SVG
-          <image
+          <SvgImage
             id={`acc-prev-${uid}`}
             href={`/characters/Accessory/${prevAcc}.svg`}
             x={s * 0.1}
@@ -225,9 +223,7 @@ export function Avatar({
         )}
 
         {currentAcc && currentAcc !== "none" && (
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore - href valid in SVG
-          <image
+          <SvgImage
             id={`acc-current-${uid}`}
             href={`/characters/Accessory/${currentAcc}.svg`}
             x={s * 0.1}

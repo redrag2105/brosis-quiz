@@ -1,8 +1,7 @@
-export type House = 'faerie' | 'phoenix' | 'thunderbird' | 'unicorn';
+export type House = "faerie" | "phoenix" | "thunderbird" | "unicorn";
 
 export interface AvatarConfig {
-  // Only accessory remains; rendered over the selected house skin asset
-  accessory: string; // e.g., 'none', 'hat3', 'glasses2'
+  accessory: string;
 }
 
 export interface StudentInfo {
@@ -42,6 +41,6 @@ export interface LeaderboardEntry {
   rank: number;
   studentInfo: StudentInfo;
   score: number;
-  percentage: number;
+  timeSpent?: number; // seconds
   completedAt: Date;
 }

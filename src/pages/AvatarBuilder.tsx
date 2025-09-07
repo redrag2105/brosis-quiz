@@ -23,12 +23,13 @@ const HOUSES: { key: House; label: string; img: string }[] = [
 
 const ACCESSORIES = [
   "none",
-  "crown",
+  "face1",
+  "face2",
+  "face3",
   "hat1",
   "hat2",
   "hat3",
   "hat4",
-  "hat5",
   "hat6",
   "hat7",
   "hat8",
@@ -38,6 +39,13 @@ const ACCESSORIES = [
   "hat12",
   "hat13",
   "hat14",
+  "hat15",
+  "hat16",
+  "hat17",
+  "hat18",
+  "hat19",
+  "hat20",
+  "hat21",
   "glasses1",
   "glasses2",
   "glasses3",
@@ -46,13 +54,16 @@ const ACCESSORIES = [
   "glasses6",
   "glasses7",
   "glasses8",
-  "flowers",
-  "headphones",
-  "scarf",
+  "glasses9",
+  "glasses10",
+  "scarf1",
+  "scarf2",
   "hair1",
   "hair2",
-  "hearts",
-  "face1",
+  "shirt1",
+  "shirt2",
+  "shirt3",
+  "shirt4",
 ] as const;
 
 export default function AvatarBuilder() {
@@ -129,10 +140,6 @@ export default function AvatarBuilder() {
             Tuỳ chỉnh Avatar
           </GradientText>
 
-          {/* <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-400 via-orange-500 to-yellow-300 bg-clip-text text-transparent">
-            Tuỳ chỉnh Avatar
-          </h1> */}
-
           <p className="text-slate-400 mt-1">
             Chọn nhà và phụ kiện cho nhân vật của bạn
           </p>
@@ -144,11 +151,12 @@ export default function AvatarBuilder() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bg-slate-800/40 mt-20 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 flex flex-col"
+            className="bg-slate-800/40 mt-23 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 flex flex-col relative overflow-hidden"
           >
+            <div className="absolute inset-0 bg-gradient-to-br from-[#7D2BB5]/10 to-transparent rounded-2xl pointer-events-none" />
             {/* Preview */}
-            <div className="rounded-xl border-2 border-slate-700/60 p-4 flex items-center justify-center min-h-[240px]">
-              <Avatar config={config} baseSkin={selectedHouse} size={220} />
+            <div className="rounded-xl border-2 border-slate-700/60 p-1 flex items-center justify-center min-h-[240px]">
+              <Avatar config={config} baseSkin={selectedHouse} size={300} />
             </div>
 
             {/* Orange row of 4 houses */}
@@ -179,11 +187,10 @@ export default function AvatarBuilder() {
               {/* <div
                 className={`text-2xl font-extrabold bg-clip-text text-transparent drop-shadow-sm bg-gradient-to-r ${nameGradientByHouse[selectedHouse]}`}
               > */}
-              {/* @ts-expect-error loi k biet sua s :))*/}
               <TextMorph
                 className={`text-2xl font-extrabold bg-clip-text text-transparent drop-shadow-sm bg-gradient-to-r ${nameGradientByHouse[selectedHouse]}`}
               >
-                {HOUSES.find((h) => h.key === selectedHouse)?.label}
+                {HOUSES.find((h) => h.key === selectedHouse)?.label ?? ""}
               </TextMorph>
               {/* </div> */}
             </div>
@@ -194,13 +201,14 @@ export default function AvatarBuilder() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.05 }}
-            className="lg:col-span-2 bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5"
+            className="lg:col-span-2 bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-5 relative overflow-hidden"
           >
+            <div className="absolute inset-0 bg-gradient-to-br from-[#7D2BB5]/10 to-transparent rounded-2xl pointer-events-none" />
             <h2 className="text-white font-semibold mb-4 flex items-center">
               <Wand2 className="w-4 h-4 mr-2" /> Phụ kiện
             </h2>
 
-            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 max-h-[580px] overflow-auto pr-1">
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 max-h-[610px] overflow-auto pr-1">
               {ACCESSORIES.map((a) => (
                 <button
                   key={a}
@@ -253,7 +261,8 @@ export default function AvatarBuilder() {
               className="relative bg-gradient-to-r cursor-pointer from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-xl"
               onClick={handleSubmitAll}
             >
-              <NotebookPen className="w-4 h-4 mr-2" /> Làm bài thi
+              Bắt đầu làm bài
+              <NotebookPen className="w-4 h-4" />
             </Button>
           </motion.div>
         </div>
