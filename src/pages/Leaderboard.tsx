@@ -6,72 +6,32 @@ import {
   Medal,
   Award,
   Home,
-  Users,
-  Clock,
-  Target,
   Crown,
   Sparkles,
   Star,
 } from "lucide-react";
-import { useAppContext } from "../context/hooks";
+
 import { SAMPLE_LEADERBOARD } from "../data/leaderboardData";
-import { ROUTES } from "../constants";
+import { ROUTES, QUIZ_CONFIG } from "../constants";
 import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Search } from "lucide-react";
 import type { LeaderboardEntry } from "../types";
 import { Avatar } from "../components/avatar/Avatar";
 
 export default function Leaderboard() {
-  const { state } = useAppContext();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [userRank, setUserRank] = useState<number | null>(null);
+  const [searchId, setSearchId] = useState("");
+  const [searchedMssv, setSearchedMssv] = useState<string | null>(null);
+  const [searchSubmitted, setSearchSubmitted] = useState(false);
+  const [searchEntry, setSearchEntry] = useState<LeaderboardEntry | null>(null);
 
   useEffect(() => {
-    // Combine sample data with current user's result if available
-    let combinedLeaderboard = [...SAMPLE_LEADERBOARD];
-
-    if (state.quizResult && state.studentInfo) {
-      const userEntry: LeaderboardEntry = {
-        rank: 0, // Will be calculated
-        studentInfo: state.studentInfo,
-        score: state.quizResult.score,
-        percentage: Math.round(
-          (state.quizResult.score / state.quizResult.totalQuestions) * 100
-        ),
-        completedAt: state.quizResult.completedAt,
-      };
-
-      // Remove any existing entry for this student
-      combinedLeaderboard = combinedLeaderboard.filter(
-        (entry) => entry.studentInfo.mssv !== state.studentInfo!.mssv
-      );
-
-      // Add user entry
-      combinedLeaderboard.push(userEntry);
-    }
-
-    // Sort by score (descending) and then by completion time (ascending)
-    combinedLeaderboard.sort((a, b) => {
-      if (b.score !== a.score) {
-        return b.score - a.score;
-      }
-      return a.completedAt.getTime() - b.completedAt.getTime();
-    });
-
-    // Update ranks
-    combinedLeaderboard.forEach((entry, index) => {
-      entry.rank = index + 1;
-    });
-
+    const combinedLeaderboard = [...SAMPLE_LEADERBOARD]
+      .sort((a, b) => (b.score !== a.score ? b.score - a.score : a.completedAt.getTime() - b.completedAt.getTime()))
+      .map((entry, index) => ({ ...entry, rank: index + 1 }));
     setLeaderboard(combinedLeaderboard);
-
-    // Find user's rank if they completed the quiz
-    if (state.quizResult && state.studentInfo) {
-      const userIndex = combinedLeaderboard.findIndex(
-        (entry) => entry.studentInfo.mssv === state.studentInfo!.mssv
-      );
-      setUserRank(userIndex >= 0 ? userIndex + 1 : null);
-    }
-  }, [state.quizResult, state.studentInfo]);
+  }, []);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -124,6 +84,22 @@ export default function Leaderboard() {
     });
   };
 
+  const formatDuration = (seconds?: number) => {
+    if (seconds === undefined || seconds === null) return "--";
+    const s = Math.max(0, Math.floor(seconds));
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    return h > 0
+      ? `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(
+          sec
+        ).padStart(2, "0")}`
+      : `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+  };
+
+  const toTitleCase = (str: string) =>
+    str.length ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+
   const floatingElements = [...Array(8)].map((_, i) => ({
     id: i,
     icon: [
@@ -138,6 +114,37 @@ export default function Leaderboard() {
     y: Math.random() * 100,
     delay: Math.random() * 3,
   }));
+
+  const handleSearch = () => {
+    const m = searchId.trim();
+    if (!m) {
+      setSearchSubmitted(true);
+      setSearchedMssv(null);
+      setSearchEntry(null);
+      return;
+    }
+    const idx = leaderboard.findIndex(
+      (e) => e.studentInfo.mssv.toLowerCase() === m.toLowerCase()
+    );
+    setSearchSubmitted(true);
+    if (idx >= 0) {
+      setSearchedMssv(leaderboard[idx].studentInfo.mssv);
+      setSearchEntry(leaderboard[idx]);
+      if (idx < 10) {
+        setTimeout(() => {
+          const anchorIdRow = `row-${leaderboard[idx].studentInfo.mssv}-${idx}`;
+          const anchorIdCard = `card-${leaderboard[idx].studentInfo.mssv}-${idx}`;
+          const el =
+            document.getElementById(anchorIdRow) ||
+            document.getElementById(anchorIdCard);
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 50);
+      }
+    } else {
+      setSearchedMssv(null);
+      setSearchEntry(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
@@ -197,130 +204,288 @@ export default function Leaderboard() {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 max-w-7xl mx-auto p-4">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-8"
-        >
-          <div className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-3xl shadow-2xl p-8 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-yellow-500/5 rounded-3xl"></div>
-
-            <div className="relative z-10">
-              <div className="flex items-center justify-center space-x-4 mb-6">
-                <motion.div
-                  animate={{ rotate: [0, 360] }}
-                  transition={{
-                    duration: 15,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                  className="w-16 h-16 bg-gradient-to-r from-cyan-500 via-purple-500 to-yellow-500 rounded-full flex items-center justify-center relative"
-                >
-                  <Trophy className="w-8 h-8 text-white" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-yellow-500 rounded-full blur-lg opacity-50 animate-pulse"></div>
-                </motion.div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-yellow-400 bg-clip-text text-transparent">
-                  Bảng xếp hạng
-                </h1>
-              </div>
-
-              <p className="text-slate-300 text-lg mb-6">
-                Xem thành tích của bạn và các sinh viên khác
-              </p>
-
-              {userRank && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.5, type: "spring" }}
-                  className="bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-cyan-500/40 rounded-xl p-4 inline-block"
-                >
-                  <span className="text-cyan-300 font-semibold flex items-center space-x-2">
-                    <span>🎯</span>
-                    <span>Thứ hạng của bạn: #{userRank}</span>
-                  </span>
-                </motion.div>
-              )}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Statistics */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
-        >
-          <motion.div
-            whileHover={{ scale: 1.05, y: -5 }}
-            className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 text-center relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-2xl"></div>
-            <div className="relative z-10">
-              <Users className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-              <div className="text-sm text-slate-400 mb-1">
-                Tổng số thí sinh
-              </div>
-              <div className="text-3xl font-bold text-blue-400">
-                {leaderboard.length}
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.05, y: -5 }}
-            className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 text-center relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 rounded-2xl"></div>
-            <div className="relative z-10">
-              <Target className="w-8 h-8 text-green-400 mx-auto mb-3" />
-              <div className="text-sm text-slate-400 mb-1">Điểm cao nhất</div>
-              <div className="text-3xl font-bold text-green-400">
-                {leaderboard.length > 0 ? leaderboard[0].score : 0}
-                <span className="text-lg text-slate-500">/21</span>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            whileHover={{ scale: 1.05, y: -5 }}
-            className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 text-center relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 rounded-2xl"></div>
-            <div className="relative z-10">
-              <Clock className="w-8 h-8 text-purple-400 mx-auto mb-3" />
-              <div className="text-sm text-slate-400 mb-1">
-                Cập nhật lần cuối
-              </div>
-              <div className="text-sm font-bold text-purple-400">
-                {leaderboard.length > 0
-                  ? formatTime(leaderboard[0].completedAt)
-                  : "--"}
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-
+      <div className="relative z-10 max-w-7xl mx-auto p-3">
         {/* Leaderboard Table */}
         <motion.div
+          id="full-leaderboard"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.8 }}
           className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-3xl shadow-2xl overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-700/20 to-slate-800/20 rounded-3xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-700/20 via-[#7D2BB5]/5 to-slate-800/20 rounded-3xl"></div>
 
-          <div className="relative z-10 p-8">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center space-x-3">
+          <div className="relative z-10 p-3 md:p-8">
+            <h2 className="text-2xl font-bold text-white mb-4 flex items-center space-x-3">
               <Crown className="w-6 h-6 text-yellow-400" />
-              <span>Xếp hạng chi tiết</span>
+              <span>Bảng Xếp Hạng (TOP 10)</span>
             </h2>
 
-            <div className="overflow-x-auto md:overflow-x-hidden">
+            {/* Search by MSSV */}
+            <div className="mb-4 gap-2 sm:items-center sm:justify-between">
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Input
+                  value={searchId}
+                  onChange={(e) => setSearchId(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSearch();
+                  }}
+                  placeholder="Nhập MSSV"
+                  className="h-10 "
+                />
+                <Button
+                  onClick={handleSearch}
+                  className="h-10 rounded-xl cursor-pointer inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                >
+                  <Search className="w-4 h-4" />
+                  Tìm
+                </Button>
+              </div>
+            </div>
+
+            {searchSubmitted && (
+              <div className="md:hidden mb-1">
+                {searchEntry ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 22 }}
+                    className="group bg-slate-800/60 relative border border-slate-700 rounded-xl p-4 flex items-center justify-between transition-all duration-300 hover:border-slate-500"
+                  >
+                    <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    <div className="absolute inset-y-0 left-0 w-1 rounded-l-xl bg-gradient-to-b from-amber-500/50 to-orange-500/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-8 h-8 flex items-center justify-center">
+                        {getRankIcon(searchEntry.rank)}
+                      </div>
+                      <Avatar
+                        baseSkin={searchEntry.studentInfo.nha}
+                        config={{
+                          accessory:
+                            searchEntry.studentInfo.avatar?.accessory ?? "none",
+                        }}
+                        size={36}
+                        className="border border-slate-600 rounded-full"
+                      />
+                      <div>
+                        <div className="text-white font-semibold leading-tight line-clamp-1">
+                          {searchEntry.studentInfo.ten}
+                        </div>
+                        <div className="text-xs text-slate-400">
+                          {searchEntry.studentInfo.mssv} • Lớp{" "}
+                          {searchEntry.studentInfo.lop} • Đại đội{" "}
+                          {searchEntry.studentInfo.daiDoi}
+                        </div>
+                        <div className="mt-1 flex items-center gap-2 text-xs">
+                          <span className="text-amber-400 font-bold">
+                            {searchEntry.score}
+                            <span className="text-slate-400">
+                              /{QUIZ_CONFIG.TOTAL_QUESTIONS}
+                            </span>
+                          </span>
+                          <span className="text-slate-400">
+                            • {formatDuration(searchEntry.timeSpent)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`px-2 py-1 rounded-md absolute bottom-2 right-2 text-xs border capitalize ${getHouseColor(
+                          searchEntry.studentInfo.nha
+                        )}`}
+                      >
+                        {toTitleCase(searchEntry.studentInfo.nha)}
+                      </span>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <div className="text-sm text-slate-300">
+                    Không tìm thấy MSSV phù hợp.
+                  </div>
+                )}
+                <img src="/sep.svg" alt="sep" className="-mb-10 -mt-10" />
+              </div>
+            )}
+
+            {searchSubmitted && (
+              <div className="hidden md:block mb-6">
+                {searchEntry ? (
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-700/50">
+                        <th className="text-left py-3 px-3 font-semibold text-slate-300">
+                          Hạng
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-300">
+                          Sinh viên
+                        </th>
+                        <th className="text-center py-3 px-3 font-semibold text-slate-300">
+                          Điểm
+                        </th>
+                        <th className="text-center py-3 px-3 font-semibold text-slate-300">
+                          Thời gian làm bài
+                        </th>
+                        <th className="text-center py-3 px-3 font-semibold text-slate-300">
+                          Nhà
+                        </th>
+                        <th className="text-center py-3 px-3 font-semibold text-slate-300">
+                          Thời gian hoàn thành
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b border-slate-700/30 hover:bg-slate-700/20">
+                        <td className="py-4 px-3">
+                          <div className="flex items-center justify-center">
+                            {getRankIcon(searchEntry.rank)}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="font-semibold text-white flex items-center space-x-3">
+                            <Avatar
+                              baseSkin={searchEntry.studentInfo.nha}
+                              config={{
+                                accessory:
+                                  searchEntry.studentInfo.avatar?.accessory ??
+                                  "none",
+                              }}
+                              size={28}
+                              className="border border-slate-600 rounded-full"
+                            />
+                            <span>{searchEntry.studentInfo.ten}</span>
+                          </div>
+                          <div className="text-sm text-slate-400">
+                            {searchEntry.studentInfo.mssv} • Lớp{" "}
+                            {searchEntry.studentInfo.lop} • Đại đội{" "}
+                            {searchEntry.studentInfo.daiDoi}
+                          </div>
+                        </td>
+                        <td className="py-4 px-3 text-center">
+                          <div className="font-bold text-xl text-white">
+                            {searchEntry.score}
+                            <span className="text-slate-400 text-sm ml-1">
+                              /{QUIZ_CONFIG.TOTAL_QUESTIONS}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-3 text-center text-slate-300 font-medium">
+                          {formatDuration(searchEntry.timeSpent)}
+                        </td>
+                        <td className="py-4 px-3 text-center">
+                          <span
+                            className={`px-3 py-1 rounded-lg text-xs font-medium capitalize border ${getHouseColor(
+                              searchEntry.studentInfo.nha
+                            )}`}
+                          >
+                            {toTitleCase(searchEntry.studentInfo.nha)}
+                          </span>
+                        </td>
+                        <td className="py-4 px-3 text-center text-sm text-slate-400">
+                          {formatTime(searchEntry.completedAt)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="text-sm text-slate-300">
+                    Không tìm thấy MSSV phù hợp.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+              {leaderboard.slice(0, 10).map((entry, idx) => (
+                <motion.div
+                  id={`card-${entry.studentInfo.mssv}-${idx}`}
+                  key={`${entry.studentInfo.mssv}-${entry.rank}-${idx}`}
+                  initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 22,
+                    delay: 0.03 * idx,
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`group bg-slate-800/60 relative border rounded-xl p-4 flex items-center justify-between transition-all duration-300 ${
+                    searchedMssv === entry.studentInfo.mssv
+                      ? "border-cyan-400"
+                      : "border-slate-700 hover:border-slate-500"
+                  }`}
+                >
+                  <motion.div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.03 * idx }}
+                  >
+                    <motion.div
+                      className="absolute top-0 -left-1/3 h-full w-1/3 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                      initial={{ x: "-150%" }}
+                      whileInView={{ x: "150%" }}
+                      viewport={{ once: true }}
+                      transition={{
+                        duration: 0.9,
+                        ease: "linear",
+                        delay: 0.03 * idx,
+                      }}
+                    />
+                  </motion.div>
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-8 h-8 flex items-center justify-center">
+                      {getRankIcon(entry.rank)}
+                    </div>
+                    <Avatar
+                      baseSkin={entry.studentInfo.nha}
+                      config={{
+                        accessory:
+                          entry.studentInfo.avatar?.accessory ?? "none",
+                      }}
+                      size={36}
+                      className="border border-slate-600 rounded-full"
+                    />
+                    <div>
+                      <div className="text-white font-semibold leading-tight whitespace-nowrap">
+                        {entry.studentInfo.ten}
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        {entry.studentInfo.mssv} • Lớp {entry.studentInfo.lop} •
+                        Đại đội {entry.studentInfo.daiDoi}
+                      </div>
+                      <div className="mt-1 flex items-center gap-2 text-xs">
+                        <span className="text-amber-400 font-bold">
+                          {entry.score}
+                          <span className="text-slate-400">
+                            /{QUIZ_CONFIG.TOTAL_QUESTIONS}
+                          </span>
+                        </span>
+                        <span className="text-slate-400">
+                          • {formatDuration(entry.timeSpent)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2 py-1 bottom-2 right-2 absolute rounded-md text-xs border ${getHouseColor(
+                      entry.studentInfo.nha
+                    )}`}
+                  >
+                    {toTitleCase(entry.studentInfo.nha)}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto md:overflow-x-hidden">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-700/50">
@@ -334,24 +499,23 @@ export default function Leaderboard() {
                       Điểm
                     </th>
                     <th className="text-center py-4 px-3 font-semibold text-slate-300">
-                      %
+                      Thời gian làm bài
                     </th>
                     <th className="text-center py-4 px-3 font-semibold text-slate-300">
                       Nhà
                     </th>
                     <th className="text-center py-4 px-3 font-semibold text-slate-300">
-                      Thời gian
+                      Thời gian hoàn thành
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {leaderboard.map((entry, index) => {
-                    const isCurrentUser =
-                      state.studentInfo &&
-                      entry.studentInfo.mssv === state.studentInfo.mssv;
+                  {leaderboard.slice(0, 10).map((entry, index) => {
+                    const isCurrentUser = false;
 
                     return (
                       <motion.tr
+                        id={`row-${entry.studentInfo.mssv}-${index}`}
                         key={`${entry.studentInfo.mssv}-${index}`}
                         initial={{ opacity: 0, x: -30 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -362,7 +526,7 @@ export default function Leaderboard() {
                           transition: { duration: 0.2 },
                         }}
                         className={`border-b border-slate-700/30 transition-all duration-300 ${
-                          isCurrentUser
+                          searchedMssv && entry.studentInfo.mssv === searchedMssv
                             ? "bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border-cyan-500/30"
                             : "hover:bg-slate-700/20"
                         }`}
@@ -380,29 +544,22 @@ export default function Leaderboard() {
                                 isCurrentUser ? "text-cyan-300" : "text-white"
                               }`}
                             >
-                              <Avatar baseSkin={entry.studentInfo.nha} config={{ accessory: entry.studentInfo.avatar?.accessory ?? 'none' }} size={28} className="border border-slate-600 rounded-full" />
+                              <Avatar
+                                baseSkin={entry.studentInfo.nha}
+                                config={{
+                                  accessory:
+                                    entry.studentInfo.avatar?.accessory ??
+                                    "none",
+                                }}
+                                size={28}
+                                className="border border-slate-600 rounded-full"
+                              />
                               <span>{entry.studentInfo.ten}</span>
-                              {isCurrentUser && (
-                                <motion.span
-                                  animate={{ scale: [1, 1.2, 1] }}
-                                  transition={{ duration: 2, repeat: Infinity }}
-                                  className="text-cyan-400"
-                                >
-                                  👤
-                                </motion.span>
-                              )}
-                              {entry.rank <= 3 && (
-                                <motion.span
-                                  animate={{ rotate: [0, 10, -10, 0] }}
-                                  transition={{ duration: 2, repeat: Infinity }}
-                                  className="text-yellow-400"
-                                >
-                                  ⭐
-                                </motion.span>
-                              )}
                             </div>
                             <div className="text-sm text-slate-400">
-                              {entry.studentInfo.mssv} • {entry.studentInfo.lop}
+                              {entry.studentInfo.mssv} • Lớp{" "}
+                              {entry.studentInfo.lop} • Đại đội{" "}
+                              {entry.studentInfo.daiDoi}
                             </div>
                           </div>
                         </td>
@@ -411,23 +568,13 @@ export default function Leaderboard() {
                           <div className="font-bold text-xl text-white">
                             {entry.score}
                             <span className="text-slate-400 text-sm ml-1">
-                              /21
+                              /{QUIZ_CONFIG.TOTAL_QUESTIONS}
                             </span>
                           </div>
                         </td>
 
-                        <td className="py-5 px-3 text-center">
-                          <span
-                            className={`font-bold text-lg ${
-                              entry.percentage >= 80
-                                ? "text-emerald-400"
-                                : entry.percentage >= 60
-                                ? "text-cyan-400"
-                                : "text-purple-400"
-                            }`}
-                          >
-                            {entry.percentage}%
-                          </span>
+                        <td className="py-5 px-3 text-center text-slate-300 font-medium">
+                          {formatDuration(entry.timeSpent)}
                         </td>
 
                         <td className="py-5 px-3 text-center">
@@ -436,7 +583,7 @@ export default function Leaderboard() {
                               entry.studentInfo.nha
                             )}`}
                           >
-                            {entry.studentInfo.nha}
+                            {toTitleCase(entry.studentInfo.nha)}
                           </span>
                         </td>
 
@@ -463,7 +610,7 @@ export default function Leaderboard() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 variant="outline"
-                className="bg-slate-700/30 border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:border-slate-500 px-8 py-3"
+                className="bg-slate-700/30 cursor-pointer border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:border-slate-500 px-8 py-3"
               >
                 <Home className="w-4 h-4 mr-2" />
                 Về trang chủ

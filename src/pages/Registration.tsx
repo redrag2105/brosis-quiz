@@ -173,7 +173,7 @@ export default function Registration() {
                 <div className="relative">
                   <Input
                     id="ten"
-                    placeholder="Ví dụ: Nguyễn Văn An"
+                    placeholder="Nguyễn Văn An"
                     {...register("ten")}
                     className={`bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-amber-500 focus:ring-amber-500/20 ${
                       errors.ten ? "border-pink-500" : ""
@@ -205,7 +205,7 @@ export default function Registration() {
                 <div className="relative">
                   <Input
                     id="mssv"
-                    placeholder="Ví dụ: SE161234"
+                    placeholder="SE161234"
                     {...register("mssv")}
                     className={`bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-amber-500 focus:ring-amber-500/20 ${
                       errors.mssv ? "border-pink-500" : ""
@@ -243,7 +243,7 @@ export default function Registration() {
               <div className="relative">
                 <Input
                   id="sdt"
-                  placeholder="Ví dụ: 0901234567"
+                  placeholder="0901234567"
                   {...register("sdt")}
                   className={`bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-amber-500 focus:ring-amber-500/20 ${
                     errors.sdt ? "border-pink-500" : ""
@@ -282,7 +282,7 @@ export default function Registration() {
                 <div className="relative">
                   <Input
                     id="lop"
-                    placeholder="Ví dụ: SE1612"
+                    placeholder="1"
                     {...register("lop")}
                     className={`bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-amber-500 focus:ring-amber-500/20 ${
                       errors.lop ? "border-pink-500" : ""
@@ -314,7 +314,7 @@ export default function Registration() {
                 <div className="relative">
                   <Input
                     id="daiDoi"
-                    placeholder="Ví dụ: Alpha"
+                    placeholder="1"
                     {...register("daiDoi")}
                     className={`bg-slate-700/50 border-slate-600 text-white placeholder-slate-400 focus:border-amber-500 focus:ring-amber-500/20 ${
                       errors.daiDoi ? "border-pink-500" : ""

@@ -15,14 +15,14 @@ export default function Home() {
   const features = [
     {
       icon: <BookOpen className="w-8 h-8 text-amber-400" />,
-      title: "21 Câu hỏi",
-      description: "Khám phá tính cách của bạn",
+      title: "20 Câu hỏi",
+      description: "Chủ đề j đó ko biết nha feni",
       color: "from-amber-500/20 to-orange-500/20",
     },
     {
       icon: <Users className="w-8 h-8 text-purple-400" />,
       title: "Cộng đồng",
-      description: "Kết nối với bạn bè FPT",
+      description: "lorem ipsum dolor sit amet",
       color: "from-purple-500/20 to-pink-500/20",
     },
     {
@@ -150,7 +150,7 @@ export default function Home() {
               transition={{ delay: 0.5 }}
               className="text-4xl font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent mb-3"
             >
-              FPT Quiz Platform
+              Vua Sinh Tồn
             </motion.h1>
 
             <motion.p
@@ -159,7 +159,7 @@ export default function Home() {
               transition={{ delay: 0.7 }}
               className="text-slate-300 text-lg"
             >
-              Khám phá bản thân qua 21 câu hỏi thú vị
+              Trình là gì
             </motion.p>
           </motion.div>
 
@@ -211,8 +211,8 @@ export default function Home() {
           >
             <p className="text-cyan-100 text-sm">
               <span className="text-2xl mr-2">🧠</span>
-              <strong>Bắt đầu hành trình:</strong> Đăng ký thông tin và khám phá
-              tính cách độc đáo của bạn qua 21 câu hỏi được thiết kế khoa học.
+              <strong>Lorem ipsum modet:</strong> Lorem ipsum, dolor sit amet
+              consectetur adipisicing eli
             </p>
           </motion.div>
 
@@ -223,7 +223,7 @@ export default function Home() {
             transition={{ delay: 1, duration: 0.6 }}
             className="space-y-4"
           >
-            <Link to={ROUTES.REGISTRATION}>
+            <Link to={ROUTES.LEADERBOARD}>
               <motion.button
                 whileHover={{
                   scale: 1.01,
@@ -235,27 +235,10 @@ export default function Home() {
                 className="w-full cursor-pointer mb-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 relative overflow-hidden group"
               >
                 <span className="relative z-10 flex items-center justify-center space-x-2">
-                  <span>🚀</span>
-                  <span>Bắt đầu khám phá</span>
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-              </motion.button>
-            </Link>
-
-            <Link to={ROUTES.LEADERBOARD}>
-              <motion.button
-                whileHover={{
-                  scale: 1.01,
-                  y: -1,
-                  transition: { duration: 0.4 },
-                }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full cursor-pointer bg-slate-700/50 border-2 border-slate-600 hover:border-slate-500 text-slate-200 font-semibold py-4 px-6 rounded-xl transition-all duration-300 backdrop-blur-sm hover:bg-slate-700/70"
-              >
-                <span className="flex items-center justify-center space-x-2">
                   <span>🏆</span>
                   <span>Bảng xếp hạng</span>
                 </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
               </motion.button>
             </Link>
           </motion.div>
@@ -267,9 +250,7 @@ export default function Home() {
             transition={{ delay: 1.2, duration: 0.6 }}
             className="mt-6 pt-6 border-t border-slate-700/50"
           >
-            <p className="text-slate-500 text-xs">
-              Được phát triển với ❤️ cho sinh viên FPT
-            </p>
+            <p className="text-slate-500 text-xs">Đây là 1 cái footer j đó</p>
           </motion.div>
         </motion.div>
       </div>

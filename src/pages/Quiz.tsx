@@ -35,10 +35,10 @@ export default function Quiz() {
     unicorn: "Unicorn",
   };
   const HOUSE_BADGE_COLORS: Record<House, string> = {
-    phoenix: "bg-orange-500/20 border-orange-500/40 text-orange-300",
-    faerie: "bg-emerald-500/20 border-emerald-500/40 text-emerald-300",
-    thunderbird: "bg-yellow-400/20 border-yellow-400/40 text-yellow-300",
-    unicorn: "bg-pink-500/20 border-pink-500/40 text-pink-300",
+    phoenix: "bg-red-500/20 text-red-400 border-red-500/40",
+    faerie: "bg-green-500/20 text-green-400 border-green-500/40",
+    thunderbird: "bg-yellow-500/20 text-yellow-400 border-yellow-500/40",
+    unicorn: "bg-purple-500/20 text-purple-400 border-purple-500/40",
   };
   const houseLabel = HOUSE_LABEL_MAP[houseKey];
 
@@ -281,7 +281,7 @@ export default function Quiz() {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="bg-slate-800/40 backdrop-blur-xl max-h-[403px] hidden md:flex flex-col rounded-2xl p-6 border border-slate-700/50 relative overflow-hidden"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-400/5 to-slate-400/5 rounded-2xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-400/5 via-[#7D2BB5]/10 to-slate-400/5 rounded-2xl"></div>
 
             <div className="relative z-10 h-full flex flex-col">
               {/* Header */}
@@ -425,6 +425,7 @@ export default function Quiz() {
               className="lg:col-span-2"
             >
               <div className="bg-slate-800/40 backdrop-blur-xl rounded-2xl p-8 border border-slate-700/50 relative overflow-hidden">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#7D2BB5]/6 to-transparent"></div>
                 <div className="relative z-10">
                   <motion.h2
                     initial={{ opacity: 0, y: 20 }}
@@ -590,7 +591,7 @@ export default function Quiz() {
             >
               <span>
                 {state.currentQuestionIndex === QUIZ_CONFIG.TOTAL_QUESTIONS - 1
-                  ? "🎉 Hoàn thành"
+                  ? "Hoàn thành"
                   : "Tiếp theo"}
               </span>
               <ArrowRight className="w-4 h-4" />

@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Clock, Target, Home, BarChart3, Sparkles, Star, Award } from "lucide-react";
+import { Trophy, Clock, Target, Sparkles, Star, Award } from "lucide-react";
 import { useAppContext } from "../context/hooks";
 import { ROUTES } from "../constants";
 import { Button } from "../components/ui/button";
 
 export default function Results() {
   const navigate = useNavigate();
-  const { state, dispatch } = useAppContext();
+  const { state } = useAppContext();
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
@@ -55,15 +55,19 @@ export default function Results() {
     return "Cần cố gắng thêm! 💪";
   };
 
-  const handleRetakeQuiz = () => {
-    dispatch({ type: "RESET_QUIZ" });
-    navigate(ROUTES.QUIZ);
-  };
-
   const floatingElements = [...Array(12)].map((_, i) => ({
     id: i,
-    icon: [<Star className="w-4 h-4" />, <Sparkles className="w-3 h-3" />, <Award className="w-4 h-4" />][i % 3],
-    color: ['text-amber-400', 'text-orange-400', 'text-yellow-400', 'text-red-400'][i % 4],
+    icon: [
+      <Star className="w-4 h-4" />,
+      <Sparkles className="w-3 h-3" />,
+      <Award className="w-4 h-4" />,
+    ][i % 3],
+    color: [
+      "text-amber-400",
+      "text-orange-400",
+      "text-yellow-400",
+      "text-red-400",
+    ][i % 4],
     x: Math.random() * 100,
     y: Math.random() * 100,
     delay: Math.random() * 3,
@@ -81,7 +85,7 @@ export default function Results() {
             className="absolute rounded-full opacity-10"
             style={{
               background: `radial-gradient(circle, ${
-                ['cyan', 'purple', 'yellow', 'pink'][i]
+                ["cyan", "purple", "yellow", "pink"][i]
               }60 0%, transparent 70%)`,
               width: `${250 + i * 75}px`,
               height: `${250 + i * 75}px`,
@@ -135,7 +139,12 @@ export default function Results() {
             <motion.div
               key={i}
               className={`absolute w-3 h-3 rounded-full ${
-                ['bg-cyan-400', 'bg-purple-400', 'bg-yellow-400', 'bg-pink-400'][i % 4]
+                [
+                  "bg-cyan-400",
+                  "bg-purple-400",
+                  "bg-yellow-400",
+                  "bg-pink-400",
+                ][i % 4]
               }`}
               initial={{
                 x: Math.random() * window.innerWidth,
@@ -229,7 +238,9 @@ export default function Results() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.8, type: "spring", stiffness: 100 }}
-                className={`text-7xl font-bold mb-4 bg-gradient-to-r ${getScoreColor(percentage)} bg-clip-text text-transparent`}
+                className={`text-7xl font-bold mb-4 bg-gradient-to-r ${getScoreColor(
+                  percentage
+                )} bg-clip-text text-transparent`}
               >
                 {percentage}%
               </motion.div>
@@ -266,7 +277,9 @@ export default function Results() {
               className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-5 text-center backdrop-blur-sm"
             >
               <Clock className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-              <div className="text-sm text-slate-400 mb-1">Thời gian hoàn thành</div>
+              <div className="text-sm text-slate-400 mb-1">
+                Thời gian hoàn thành
+              </div>
               <div className="font-bold text-blue-400 text-lg">
                 {minutes}:{seconds.toString().padStart(2, "0")}
               </div>
@@ -278,7 +291,9 @@ export default function Results() {
             >
               <Target className="w-8 h-8 text-green-400 mx-auto mb-3" />
               <div className="text-sm text-slate-400 mb-1">Độ chính xác</div>
-              <div className="font-bold text-green-400 text-lg">{percentage}%</div>
+              <div className="font-bold text-green-400 text-lg">
+                {percentage}%
+              </div>
             </motion.div>
           </motion.div>
 
@@ -296,11 +311,15 @@ export default function Results() {
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <span className="text-slate-400">MSSV:</span>{" "}
-                <span className="font-medium text-cyan-400">{state.studentInfo.mssv}</span>
+                <span className="font-medium text-cyan-400">
+                  {state.studentInfo.mssv}
+                </span>
               </div>
               <div>
                 <span className="text-slate-400">Lớp:</span>{" "}
-                <span className="font-medium text-purple-400">{state.studentInfo.lop}</span>
+                <span className="font-medium text-purple-400">
+                  {state.studentInfo.lop}
+                </span>
               </div>
               <div>
                 <span className="text-slate-400">Nhà:</span>{" "}
@@ -310,46 +329,25 @@ export default function Results() {
               </div>
               <div>
                 <span className="text-slate-400">Đại đội:</span>{" "}
-                <span className="font-medium text-pink-400">{state.studentInfo.daiDoi}</span>
+                <span className="font-medium text-pink-400">
+                  {state.studentInfo.daiDoi}
+                </span>
               </div>
             </div>
           </motion.div>
 
-          {/* Action Buttons */}
+          {/* Primary action */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.6 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10"
+            className="relative z-10 flex justify-center"
           >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                onClick={handleRetakeQuiz}
-                variant="outline"
-                className="w-full flex items-center justify-center space-x-2 bg-slate-700/30 border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:border-slate-500 py-3"
-              >
-                <Target className="w-4 h-4" />
-                <span>Làm lại</span>
-              </Button>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link to={ROUTES.LEADERBOARD}>
-                <Button className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3">
-                  <BarChart3 className="w-4 h-4" />
-                  <span>Bảng xếp hạng</span>
-                </Button>
-              </Link>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link to={ROUTES.HOME}>
-                <Button
-                  variant="outline"
-                  className="w-full flex items-center justify-center space-x-2 bg-slate-700/30 border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:border-slate-500 py-3"
-                >
-                  <Home className="w-4 h-4" />
-                  <span>Trang chủ</span>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+              <Link to={ROUTES.REGISTRATION}>
+                <Button className="group px-8 py-4 rounded-xl cursor-pointer bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white relative overflow-hidden">
+                  <span className="relative z-10">Đã hiểu</span>
+                  <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                 </Button>
               </Link>
             </motion.div>
