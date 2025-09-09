@@ -28,7 +28,11 @@ export default function Leaderboard() {
 
   useEffect(() => {
     const combinedLeaderboard = [...SAMPLE_LEADERBOARD]
-      .sort((a, b) => (b.score !== a.score ? b.score - a.score : a.completedAt.getTime() - b.completedAt.getTime()))
+      .sort((a, b) =>
+        b.score !== a.score
+          ? b.score - a.score
+          : a.completedAt.getTime() - b.completedAt.getTime()
+      )
       .map((entry, index) => ({ ...entry, rank: index + 1 }));
     setLeaderboard(combinedLeaderboard);
   }, []);
@@ -73,6 +77,45 @@ export default function Leaderboard() {
         return "bg-slate-500/20 text-slate-400 border-slate-500/40";
     }
   };
+
+  // Rank color gradients for MSSV badges
+  const getRankGradient = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return "bg-gradient-to-r from-orange-400 via-yellow-600 to-amber-500"; // gold
+      case 2:
+        return "bg-gradient-to-r from-slate-300 via-slate-600 to-slate-200 text-slate-900"; // silver
+      case 3:
+        return "bg-gradient-to-r from-amber-800 via-yellow-700 to-orange-600 text-amber-50"; // bronze
+      default:
+        return "bg-slate-700 text-slate-200";
+    }
+  };
+
+  const getHouseInitial = (house: string) =>
+    house ? house.charAt(0).toUpperCase() : "?";
+
+  const [expandedPodium, setExpandedPodium] = useState<number | null>(null);
+  const togglePodium = (rank: number) => {
+    setExpandedPodium((prev) => (prev === rank ? null : rank));
+  };
+
+  // Close tooltip when clicking outside or pressing Escape (Mobile podium)
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".podium-card")) setExpandedPodium(null);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExpandedPodium(null);
+    };
+    document.addEventListener("click", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
 
   const formatTime = (date: Date) => {
     return date.toLocaleString("vi-VN", {
@@ -243,6 +286,7 @@ export default function Leaderboard() {
               </div>
             </div>
 
+            {/* Search Submit for Mobile */}
             {searchSubmitted && (
               <div className="md:hidden mb-1">
                 {searchEntry ? (
@@ -268,8 +312,8 @@ export default function Leaderboard() {
                         size={36}
                         className="border border-slate-600 rounded-full"
                       />
-                      <div>
-                        <div className="text-white font-semibold leading-tight line-clamp-1">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white font-semibold leading-tight max-w-[12rem] truncate">
                           {searchEntry.studentInfo.ten}
                         </div>
                         <div className="text-xs text-slate-400">
@@ -305,10 +349,11 @@ export default function Leaderboard() {
                     Không tìm thấy MSSV phù hợp.
                   </div>
                 )}
-                <img src="/sep.svg" alt="sep" className="-mb-10 -mt-10" />
+                <img src="/sep.svg" alt="sep" className="-mb-16 -mt-10" />
               </div>
             )}
 
+            {/* Search Submit for Desktop */}
             {searchSubmitted && (
               <div className="hidden md:block mb-6">
                 {searchEntry ? (
@@ -354,7 +399,9 @@ export default function Leaderboard() {
                               size={28}
                               className="border border-slate-600 rounded-full"
                             />
-                            <span>{searchEntry.studentInfo.ten}</span>
+                            <span className="max-w-[18rem] truncate">
+                              {searchEntry.studentInfo.ten}
+                            </span>
                           </div>
                           <div className="text-sm text-slate-400">
                             {searchEntry.studentInfo.mssv} • Lớp{" "}
@@ -396,12 +443,160 @@ export default function Leaderboard() {
               </div>
             )}
 
+            {/* Top 3 Podium */}
+            {(() => {
+              const topThree = leaderboard.slice(0, 3);
+              if (!topThree.length) return null;
+              // Ordered (2nd, 1st, 3rd)
+              const ordered =
+                topThree.length === 3
+                  ? [topThree[1], topThree[0], topThree[2]]
+                  : topThree;
+
+              return (
+                <div className="md:hidden mb-14">
+                  <div className="grid grid-cols-3 gap-2 items-end">
+                    {ordered.map((entry, colIdx) => {
+                      const rank = entry.rank;
+                      const isWinner = rank === 1;
+                      const sizes = isWinner ? 64 : rank === 2 ? 52 : 48;
+                      const ring = isWinner
+                        ? "ring-2 ring-amber-400 shadow-amber-400/30"
+                        : rank === 2
+                        ? "ring-2 ring-slate-300 shadow-slate-300/20"
+                        : "ring-2 ring-purple-400 shadow-purple-400/20";
+                      const bg = isWinner
+                        ? "from-amber-500/15 to-orange-500/10"
+                        : rank === 2
+                        ? "from-slate-500/15 to-slate-400/10"
+                        : "from-purple-500/15 to-pink-500/10";
+
+                      return (
+                        <motion.div
+                          key={`${entry.studentInfo.mssv}-podium-${rank}`}
+                          initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 240,
+                            damping: 20,
+                            delay: 0.06 * colIdx,
+                          }}
+                          className={`podium-card relative mt-15 rounded-xl p-2 text-center bg-gradient-to-b ${bg} border border-slate-700/60 shadow-xl overflow-visible flex flex-col items-center justify-start`}
+                        >
+                          {/* House Badge (top-right) */}
+                          <div className="absolute top-1 right-1">
+                            <div
+                              className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${getHouseColor(
+                                entry.studentInfo.nha
+                              )} border`}
+                            >
+                              {getHouseInitial(entry.studentInfo.nha)}
+                            </div>
+                          </div>
+
+                          {/* Tappable podium to toggle extra info */}
+                          <button
+                            type="button"
+                            onClick={() => togglePodium(rank)}
+                            className="w-full text-left"
+                            aria-expanded={expandedPodium === rank}
+                          >
+                            {/* Crown for the winner */}
+                            {isWinner && (
+                              <motion.div
+                                initial={{ y: -10, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.15 }}
+                                className="absolute -top-5 left-1/2 -translate-x-1/2"
+                                aria-hidden
+                              >
+                                <div className="relative">
+                                  <Crown className="w-8 h-8 text-yellow-400" />
+                                  <div className="absolute inset-0 rounded-full blur-md bg-yellow-400/40 opacity-60 animate-pulse" />
+                                </div>
+                              </motion.div>
+                            )}
+
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="relative">
+                                <Avatar
+                                  baseSkin={entry.studentInfo.nha}
+                                  config={{
+                                    accessory:
+                                      entry.studentInfo.avatar?.accessory ??
+                                      "none",
+                                  }}
+                                  size={sizes}
+                                  className={`rounded-full border border-slate-600 shadow-lg ${ring}`}
+                                />
+                                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+                                  <div className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-slate-900 bg-white/80">
+                                    #{rank}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="text-white font-semibold text-sm text-center flex flex-col justify-center px-1 break-words min-h-[2.5rem] leading-tight mt-3 w-30">
+                                {entry.studentInfo.ten}
+                              </div>
+
+                              {/* MSSV */}
+                              <span
+                                className={`px-2 py-0.5 text-[11px] mt-1 rounded-full font-medium font-mono ${getRankGradient(
+                                  rank
+                                )}`}
+                              >
+                                {entry.studentInfo.mssv}
+                              </span>
+                              <div className="mt-1.5 flex items-center gap-2 text-[11px]">
+                                <span className="text-amber-400 font-bold">
+                                  {entry.score}
+                                  <span className="text-slate-400">
+                                    /{QUIZ_CONFIG.TOTAL_QUESTIONS}
+                                  </span>
+                                </span>
+                                <span className="text-slate-300">
+                                  {formatDuration(entry.timeSpent)}
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+
+                          {/* Tooltip popup (mobile) */}
+                          {expandedPodium === rank && (
+                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 z-50">
+                              <div className="bg-slate-800/90 text-slate-200 px-3 py-2 rounded-md border border-slate-700 shadow-lg text-sm">
+                                <div className="whitespace-nowrap">
+                                  Lớp:{" "}
+                                  <span className="font-semibold">
+                                    {entry.studentInfo.lop}
+                                  </span>
+                                </div>
+                                <div className="whitespace-nowrap">
+                                  Đại đội:{" "}
+                                  <span className="font-semibold">
+                                    {entry.studentInfo.daiDoi}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Mobile cards */}
             <div className="md:hidden space-y-3">
-              {leaderboard.slice(0, 10).map((entry, idx) => (
+              {leaderboard.slice(3, 10).map((entry, idx) => (
                 <motion.div
-                  id={`card-${entry.studentInfo.mssv}-${idx}`}
-                  key={`${entry.studentInfo.mssv}-${entry.rank}-${idx}`}
+                  id={`card-${entry.studentInfo.mssv}-${idx + 3}`}
+                  key={`${entry.studentInfo.mssv}-${entry.rank}-${idx + 3}`}
                   initial={{ opacity: 0, y: 24, scale: 0.98 }}
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   viewport={{ once: true, amount: 0.3 }}
@@ -452,8 +647,8 @@ export default function Leaderboard() {
                       size={36}
                       className="border border-slate-600 rounded-full"
                     />
-                    <div>
-                      <div className="text-white font-semibold leading-tight whitespace-nowrap">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-semibold leading-tight max-w-[12rem] truncate">
                         {entry.studentInfo.ten}
                       </div>
                       <div className="text-xs text-slate-400">
@@ -526,7 +721,8 @@ export default function Leaderboard() {
                           transition: { duration: 0.2 },
                         }}
                         className={`border-b border-slate-700/30 transition-all duration-300 ${
-                          searchedMssv && entry.studentInfo.mssv === searchedMssv
+                          searchedMssv &&
+                          entry.studentInfo.mssv === searchedMssv
                             ? "bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border-cyan-500/30"
                             : "hover:bg-slate-700/20"
                         }`}
@@ -554,7 +750,9 @@ export default function Leaderboard() {
                                 size={28}
                                 className="border border-slate-600 rounded-full"
                               />
-                              <span>{entry.studentInfo.ten}</span>
+                              <span className="max-w-[18rem] truncate">
+                                {entry.studentInfo.ten}
+                              </span>
                             </div>
                             <div className="text-sm text-slate-400">
                               {entry.studentInfo.mssv} • Lớp{" "}

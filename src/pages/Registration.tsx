@@ -152,7 +152,7 @@ export default function Registration() {
           </motion.div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Row 1: Tên and MSSV */}
+            {/* Tên + MSSV */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -224,7 +224,7 @@ export default function Registration() {
               </div>
             </motion.div>
 
-            {/* Row 2: Số điện thoại */}
+            {/* SĐT */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -261,7 +261,7 @@ export default function Registration() {
               </div>
             </motion.div>
 
-            {/* Row 3: Lớp and Đại đội */}
+            {/* Lớp + Đại đội */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
