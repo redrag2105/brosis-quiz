@@ -2,6 +2,7 @@ export type House = "faerie" | "phoenix" | "thunderbird" | "unicorn";
 
 export interface AvatarConfig {
   accessory: string;
+  shirt?: string;
 }
 
 export interface StudentInfo {

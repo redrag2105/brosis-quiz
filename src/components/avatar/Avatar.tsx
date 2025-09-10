@@ -26,6 +26,10 @@ export function Avatar({
   const uid = uidRaw.replace(/:/g, "_");
 
   const [currentSkin, setCurrentSkin] = useState<string>(String(baseSkin));
+
+  // shirt layer state
+  const [currentShirt, setCurrentShirt] = useState<string | undefined>(config.shirt);
+  const [prevShirt, setPrevShirt] = useState<string | null>(null);
   const [prevSkin, setPrevSkin] = useState<string | null>(null);
 
   const [currentAcc, setCurrentAcc] = useState<string>(config.accessory);
@@ -48,6 +52,15 @@ export function Avatar({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.accessory]);
+
+  useEffect(() => {
+    const next = config.shirt;
+    if (next !== currentShirt) {
+      setPrevShirt(currentShirt ?? null);
+      setCurrentShirt(next);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.shirt]);
 
   // Skin reveal animation (isolated)
   useLayoutEffect(() => {
@@ -131,6 +144,54 @@ export function Avatar({
     return () => ctx.revert();
   }, [currentAcc, prevAcc, s, uid]);
 
+  // Shirt reveal animation (similar to accessory)
+  useLayoutEffect(() => {
+    if (!containerRef.current) return;
+    const circle = containerRef.current.querySelector(
+      `#revealCircleShirt-${uid}`
+    ) as SVGCircleElement | null;
+    const blur = containerRef.current.querySelector(
+      `#revealBlurShirt-${uid}`
+    ) as SVGFEGaussianBlurElement | null;
+
+    const ctx = gsap.context(() => {
+      gsap.killTweensOf([
+        `#shirt-current-${uid}`,
+        `#shirt-prev-${uid}`,
+        circle,
+        blur,
+      ]);
+
+      if (prevShirt && prevShirt !== "none") {
+        if (circle) {
+          gsap.set(circle, { attr: { r: 0, cx: s * 0.5, cy: s * 0.5 } });
+          gsap.to(circle, {
+            attr: { r: s },
+            duration: 0.48,
+            ease: "power3.out",
+          });
+        }
+        if (blur) {
+          gsap.fromTo(
+            blur,
+            { attr: { stdDeviation: 1.2 } },
+            { attr: { stdDeviation: 0 }, duration: 0.34, ease: "power2.out" }
+          );
+        }
+        const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+        tl.to(`#shirt-current-${uid}`, { opacity: 1, duration: 0.34 }, 0);
+        tl.to(`#shirt-prev-${uid}`, { opacity: 0, duration: 0.24 }, 0);
+        tl.add(() => setPrevShirt(null));
+      } else {
+        gsap.set(`#shirt-current-${uid}`, {
+          opacity: currentShirt && currentShirt !== "none" ? 1 : 0,
+        });
+      }
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, [currentShirt, prevShirt, s, uid]);
+
   return (
     <div
       ref={containerRef}
@@ -182,6 +243,28 @@ export function Avatar({
               stdDeviation="0"
             />
           </filter>
+
+          <clipPath id={`revealClipShirt-${uid}`}>
+            <circle
+              id={`revealCircleShirt-${uid}`}
+              cx={s * 0.5}
+              cy={s * 0.5}
+              r={s}
+            />
+          </clipPath>
+          <filter
+            id={`revealFilterShirt-${uid}`}
+            x="-20%"
+            y="-20%"
+            width="140%"
+            height="140%"
+          >
+            <feGaussianBlur
+              id={`revealBlurShirt-${uid}`}
+              in="SourceGraphic"
+              stdDeviation="0"
+            />
+          </filter>
         </defs>
 
         {prevSkin && (
@@ -208,6 +291,34 @@ export function Avatar({
           clipPath={`url(#revealClipSkin-${uid})`}
           filter={`url(#revealFilterSkin-${uid})`}
         />
+
+        {prevShirt && prevShirt !== "none" && (
+          <SvgImage
+            id={`shirt-prev-${uid}`}
+            href={`/characters/Accessory/${prevShirt}.svg`}
+            x={s * 0.1}
+            y={s * 0.08}
+            width={s * 0.8}
+            height={s * 0.8}
+            preserveAspectRatio="xMidYMid meet"
+            opacity={1}
+          />
+        )}
+
+        {currentShirt && currentShirt !== "none" && (
+          <SvgImage
+            id={`shirt-current-${uid}`}
+            href={`/characters/Accessory/${currentShirt}.svg`}
+            x={s * 0.1}
+            y={s * 0.08}
+            width={s * 0.8}
+            height={s * 0.8}
+            preserveAspectRatio="xMidYMid meet"
+            opacity={prevShirt ? 0 : 1}
+            clipPath={`url(#revealClipShirt-${uid})`}
+            filter={`url(#revealFilterShirt-${uid})`}
+          />
+        )}
 
         {prevAcc && prevAcc !== "none" && (
           <SvgImage

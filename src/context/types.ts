@@ -37,6 +37,7 @@ export const initialState: AppState = {
   timeRemaining: 30 * 60 * 1000, // 30 minutes in milliseconds
   avatar: {
     accessory: 'none',
+    shirt: 'none',
   },
 };
 
