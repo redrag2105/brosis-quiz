@@ -9,6 +9,10 @@ import type { AvatarConfig, House } from "../types";
 import { ROUTES } from "../constants";
 import GradientText from "@/components/gradient-text";
 import { TextMorph } from "@/components/ui/text-morph";
+import { useForm } from "react-hook-form";
+import { registerApi } from "@/apis/registerApi";
+import { toast } from "sonner";
+import { attemptApi } from "@/apis/attemptApi";
 
 const HOUSES: { key: House; label: string; img: string }[] = [
   { key: "faerie", label: "Faerie", img: "/characters/Skin/faerie.svg" },
@@ -75,6 +79,25 @@ type AccessoryCategory =
   | "hair"
   | "shirt";
 
+type FormData = {
+  full_name: string;
+  student_id: string;
+  phone_number: string;
+  class_code: string;
+  company_unit: string;
+  house: string;
+  accessory: string;
+  shirt: string;
+};
+
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string | { [key: string]: string };
+    };
+  };
+}
+
 export default function AvatarBuilder() {
   const { state, dispatch } = useAppContext();
   const navigate = useNavigate();
@@ -82,6 +105,10 @@ export default function AvatarBuilder() {
   const [hoverAcc, setHoverAcc] = useState<string | null>(null);
   const [hoverShirt, setHoverShirt] = useState<string | null>(null);
   const [category, setCategory] = useState<AccessoryCategory>("all");
+
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const { setError } = useForm<FormData>();
 
   const config = state.avatar;
   const selectedHouse = state.studentInfo?.nha ?? "faerie";
@@ -113,31 +140,60 @@ export default function AvatarBuilder() {
 
   const handleSubmitAll = async () => {
     if (!state.studentInfo) return;
-    const payload = {
+    setIsProcessing(true);
+
+    const registrationPayload = {
       full_name: state.studentInfo.ten,
-      mssv: state.studentInfo.mssv,
+      student_id: state.studentInfo.mssv,
       phone_number: state.studentInfo.sdt,
       class_code: state.studentInfo.lop,
       company_unit: state.studentInfo.daiDoi,
-      house: state.studentInfo.nha,
+      house: state.studentInfo.nha.toUpperCase(),
       accessory: state.avatar.accessory,
       shirt: state.avatar.shirt,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const url = (import.meta as any).env?.VITE_SUBMIT_URL as string | undefined;
+    const attemptPayload = {
+      student_id: state.studentInfo.mssv,
+    };
+
     try {
-      if (url) {
-        await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+      await registerApi(registrationPayload);
+
+      toast.info("Đăng kí thành công!", {
+        description: "Đang chuẩn bị bài thi cho bạn...",
+      });
+
+      const attemptResponse = await attemptApi.getQuestions(attemptPayload);
+
+      toast.success("Tải bài thi thành công!", {
+        description: "Chúc bạn may mắn!",
+      });
+
+      dispatch({
+        type: "SET_QUIZ_DATA",
+        payload: attemptResponse.result,
+      });
+
+      navigate(ROUTES.QUIZ);
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      const message = error.response?.data?.message;
+
+      if (typeof message === "object" && message !== null) {
+        Object.entries(message).forEach(([field, msg]) => {
+          setError(field as keyof FormData, { type: "server", message: msg });
+          toast.error("Đăng kí không thành công!", { description: msg });
+        });
+      } else if (message) {
+        toast.error("Đăng kí không thành công!", { description: message });
+      } else {
+        toast.error("An Error Occurred", {
+          description: "Could not connect to the server. Please try again.",
         });
       }
-    } catch (e) {
-      console.error(e);
     } finally {
-      navigate(ROUTES.QUIZ);
+      setIsProcessing(false);
     }
   };
 
@@ -414,9 +470,10 @@ export default function AvatarBuilder() {
             <Button
               className="relative bg-gradient-to-r cursor-pointer from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-xl"
               onClick={handleSubmitAll}
+              disabled={isProcessing} // Disable button while processing
             >
-              Bắt đầu làm bài
-              <NotebookPen className="w-4 h-4" />
+              {isProcessing ? "Đang xử lý..." : "Bắt đầu làm bài"}
+              <NotebookPen className="w-4 h-4 ml-2" />
             </Button>
           </motion.div>
         </div>

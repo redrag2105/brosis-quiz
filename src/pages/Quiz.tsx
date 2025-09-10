@@ -10,22 +10,37 @@ import {
   Zap,
   Users,
   Home,
+  Menu,
+  X,
+  Loader2,
 } from "lucide-react";
-import { Menu, X } from "lucide-react";
 import { useAppContext } from "../context/hooks";
-import { SAMPLE_QUIZ_QUESTIONS } from "../data/quizData";
-import { ROUTES, QUIZ_CONFIG } from "../constants";
+import { ROUTES } from "../constants";
 import { Button } from "../components/ui/button";
 import { Avatar } from "../components/avatar/Avatar";
 import type { House } from "../types";
+import { toast } from "sonner";
+import { answerApi } from "@/apis/answerApi";
 
 export default function Quiz() {
   const navigate = useNavigate();
   const { state, dispatch } = useAppContext();
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+
+  // Local state for the currently selected option before submission
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  // Loading state specifically for the Next/Finish button API call
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  // State for the count-up timer
   const [startTime] = useState(Date.now());
-  const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+
+  const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
+
+  const { quizData, studentInfo, currentQuestionIndex, answers } = state;
+  const questions = quizData?.questions ?? [];
+  const attemptId = quizData?.attemptId;
+  const totalQuestions = questions.length;
 
   const houseKey: House = state.studentInfo?.nha ?? "faerie";
   const HOUSE_LABEL_MAP: Record<House, string> = {
@@ -42,90 +57,117 @@ export default function Quiz() {
   };
   const houseLabel = HOUSE_LABEL_MAP[houseKey];
 
-  const currentQuestion = SAMPLE_QUIZ_QUESTIONS[state.currentQuestionIndex];
-  const answeredCount = state.answers.length;
-  const isLastQuestion =
-    state.currentQuestionIndex === QUIZ_CONFIG.TOTAL_QUESTIONS - 1;
-  const allAnswered = answeredCount === QUIZ_CONFIG.TOTAL_QUESTIONS;
-  const progress = (answeredCount / QUIZ_CONFIG.TOTAL_QUESTIONS) * 100;
-
   useEffect(() => {
-    if (!state.studentInfo) {
+    if (!studentInfo || !quizData) {
+      toast.error("Không tìm thấy thông tin bài thi", {
+        description: "Vui lòng đăng kí lại từ đầu.",
+      });
       navigate(ROUTES.REGISTRATION);
-      return;
+    } else if (!state.quizStartTime) {
+      dispatch({ type: "START_QUIZ", payload: { startTime: new Date() } });
     }
-  }, [state.studentInfo, navigate]);
+  }, [studentInfo, quizData, state.quizStartTime, navigate, dispatch]);
 
+  // Count-up timer
   useEffect(() => {
-    const id = setInterval(() => {
+    const timerId = setInterval(() => {
       setElapsed(Math.floor((Date.now() - startTime) / 1000));
     }, 1000);
-    return () => clearInterval(id);
+    return () => clearInterval(timerId);
   }, [startTime]);
 
+  const currentQuestion = questions[currentQuestionIndex];
+  const answeredCount = answers.length;
+  const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
+  const allAnswered = answeredCount === totalQuestions;
+  const progress =
+    totalQuestions > 0 ? (answers.length / totalQuestions) * 100 : 0;
+
+  // When question changes, check if there's already an answer in global state to display
   useEffect(() => {
-    // Check if we have an existing answer for this question
-    const existingAnswer = state.answers.find(
-      (answer) => answer.questionId === currentQuestion?.id
-    );
-    setSelectedAnswer(existingAnswer?.selectedAnswer ?? null);
-  }, [state.currentQuestionIndex, state.answers, currentQuestion]);
-
-  const handleAnswerSelect = (answerIndex: number) => {
-    setSelectedAnswer(answerIndex);
-
     if (currentQuestion) {
-      dispatch({
-        type: "SET_ANSWER",
-        payload: {
-          questionId: currentQuestion.id,
-          selectedAnswer: answerIndex,
-          isCorrect: answerIndex === currentQuestion.correctAnswer,
-        },
-      });
+      const existingAnswer = answers.find(
+        (answer) => answer.questionId === currentQuestion.id
+      );
+      setSelectedOptionId(existingAnswer?.optionId ?? null);
     }
+  }, [currentQuestionIndex, answers, currentQuestion]);
+
+  const handleAnswerSelect = (optionId: string) => {
+    setSelectedOptionId(optionId);
   };
 
-  const handleNext = () => {
-    if (state.currentQuestionIndex < QUIZ_CONFIG.TOTAL_QUESTIONS - 1) {
+  const handleNext = async () => {
+    if (isNavigating || !currentQuestion || !attemptId) return;
+
+    if (isLastQuestion && !allAnswered) {
+      toast.error("Bạn phải hoàn thành tất cả câu hỏi trước khi kết thúc.");
+      return;
+    }
+
+    const existingAnswer = answers.find(
+      (a) => a.questionId === currentQuestion.id
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const changed = selectedOptionId !== (existingAnswer as any)?.optionId;
+
+    // If answer changed (including selecting an answer for the first time), submit it.
+    if (changed && selectedOptionId) {
+      setIsNavigating(true);
+
+      try {
+        await answerApi.updateAnswer(
+          attemptId,
+          currentQuestion.id,
+          selectedOptionId
+        );
+
+        // Save the answer to global state
+        dispatch({
+          type: "SET_ANSWER",
+          payload: {
+            questionId: currentQuestion.id,
+            optionId: selectedOptionId,
+          },
+        });
+
+        toast.dismiss();
+        toast.success("Đã lưu!");
+      } catch (error) {
+        toast.dismiss();
+        toast.error("Lỗi khi lưu câu trả lời", {
+          description: "Vui lòng thử lại.",
+        });
+        console.error(error);
+        setIsNavigating(false);
+        return;
+      } finally {
+        setIsNavigating(false);
+      }
+    }
+
+    if (!isLastQuestion) {
       dispatch({ type: "NEXT_QUESTION" });
-      setSelectedAnswer(null);
     } else {
-      if (!allAnswered) return;
-      const correctAnswers = state.answers.filter(
-        (answer) => answer.isCorrect
-      ).length;
-      const timeSpent = Math.floor((Date.now() - startTime) / 1000);
-
-      const result = {
-        studentInfo: state.studentInfo!,
-        answers: state.answers,
-        score: correctAnswers,
-        totalQuestions: QUIZ_CONFIG.TOTAL_QUESTIONS,
-        completedAt: new Date(),
-        timeSpent,
-      };
-
-      dispatch({ type: "COMPLETE_QUIZ", payload: result });
+      toast.success("Bài thi hoàn tất!", {
+        description: "Đang chuyển bạn đến trang kết quả.",
+      });
       navigate(ROUTES.RESULTS);
     }
   };
 
   const handlePrevious = () => {
-    if (state.currentQuestionIndex > 0) {
+    if (currentQuestionIndex > 0) {
       dispatch({ type: "PREV_QUESTION" });
-      setSelectedAnswer(null);
     }
   };
 
-  if (!state.studentInfo || !currentQuestion) {
+  if (!studentInfo || !quizData || !currentQuestion) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="w-16 h-16 border-4 border-amber-500/30 border-t-amber-500 rounded-full"
-        />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center text-white">
+        <Loader2 className="w-16 h-16 animate-spin text-amber-500 mb-4" />
+        <p>Đang tải bài thi...</p>
       </div>
     );
   }
@@ -147,9 +189,7 @@ export default function Quiz() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
-      {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Large gradient orbs */}
         {[...Array(3)].map((_, i) => (
           <motion.div
             key={`quiz-orb-${i}`}
@@ -175,16 +215,11 @@ export default function Quiz() {
             }}
           />
         ))}
-
-        {/* Floating elements */}
         {floatingElements.map((element) => (
           <motion.div
             key={element.id}
             className={`absolute ${element.color}`}
-            style={{
-              left: `${element.x}%`,
-              top: `${element.y}%`,
-            }}
+            style={{ left: `${element.x}%`, top: `${element.y}%` }}
             animate={{
               y: [-15, 15, -15],
               opacity: [0.2, 0.6, 0.2],
@@ -202,7 +237,6 @@ export default function Quiz() {
         ))}
       </div>
 
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -213,19 +247,15 @@ export default function Quiz() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Avatar
-                baseSkin={state.studentInfo?.nha}
-                config={{
-                  accessory:
-                    state.studentInfo?.avatar?.accessory ??
-                    state.avatar.accessory,
-                }}
+                baseSkin={studentInfo.nha}
+                config={studentInfo.avatar ?? state.avatar}
                 size={48}
                 className="border border-slate-600 rounded-full"
               />
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
-                    {state.studentInfo.ten}
+                    {studentInfo.ten}
                   </h1>
                   <span
                     className={`px-2 py-1 rounded-full text-xs border inline-flex items-center ${HOUSE_BADGE_COLORS[houseKey]}`}
@@ -235,11 +265,10 @@ export default function Quiz() {
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="px-2 py-1 rounded-full text-xs bg-slate-700/40 border border-slate-600 text-slate-300 inline-flex items-center gap-1">
-                    <Users className="w-3 h-3" /> Lớp {state.studentInfo.lop}
+                    <Users className="w-3 h-3" /> Lớp {studentInfo.lop}
                   </span>
                   <span className="px-2 py-1 rounded-full text-xs bg-slate-700/40 border border-slate-600 text-slate-300 inline-flex items-center gap-1">
-                    <Home className="w-3 h-3" /> Đại đội{" "}
-                    {state.studentInfo.daiDoi}
+                    <Home className="w-3 h-3" /> Đại đội {studentInfo.daiDoi}
                   </span>
                 </div>
               </div>
@@ -253,8 +282,7 @@ export default function Quiz() {
             </button>
             <div className="text-right">
               <p className="text-slate-300 font-medium mb-2">
-                Câu {state.currentQuestionIndex + 1} /{" "}
-                {QUIZ_CONFIG.TOTAL_QUESTIONS}
+                Câu {currentQuestionIndex + 1} / {totalQuestions}
               </p>
               <div className="w-40 h-3 bg-slate-700/50 rounded-full overflow-hidden">
                 <motion.div
@@ -271,7 +299,7 @@ export default function Quiz() {
         </div>
       </motion.div>
 
-      {/* Main Content */}
+      {/* Main */}
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-8 lg:mt-16 pb-28">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 min-h-[360px]">
           {/* Question List Panel */}
@@ -282,7 +310,6 @@ export default function Quiz() {
             className="bg-slate-800/40 backdrop-blur-xl max-h-[403px] hidden md:flex flex-col rounded-2xl p-6 border border-slate-700/50 relative overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-orange-400/5 via-[#7D2BB5]/10 to-slate-400/5 rounded-2xl"></div>
-
             <div className="relative z-10 h-full flex flex-col">
               {/* Header */}
               <div className="mb-2">
@@ -307,39 +334,27 @@ export default function Quiz() {
               {/* Questions Grid */}
               <div className="flex-1 overflow-y-auto">
                 <div className="grid lg:grid-cols-5 xl:grid-cols-6 md:grid-cols-15 gap-2 p-1 ">
-                  {[...Array(QUIZ_CONFIG.TOTAL_QUESTIONS)].map((_, index) => {
-                    const questionId = SAMPLE_QUIZ_QUESTIONS[index]?.id;
-                    const isAnswered = state.answers.some(
-                      (answer) => answer.questionId === questionId
+                  {questions.map((question, index) => {
+                    const isAnswered = answers.some(
+                      (answer) => answer.questionId === question.id
                     );
-                    const isCurrent = state.currentQuestionIndex === index;
-                    const isPast = index < state.currentQuestionIndex;
-
+                    const isCurrent = currentQuestionIndex === index;
                     return (
                       <motion.div
-                        key={index}
+                        key={question.id}
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{
                           delay: 0.1 * (index % 10),
                           duration: 0.3,
                         }}
-                        className={`
-                          relative w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-300 border-2
-                          ${
-                            isCurrent
-                              ? "bg-gradient-to-r from-amber-500 to-orange-500 border-amber-400 text-white shadow-lg shadow-amber-500/30 cursor-pointer"
-                              : isAnswered
-                              ? "bg-green-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30 cursor-pointer"
-                              : index === state.currentQuestionIndex - 1 ||
-                                (index === state.currentQuestionIndex + 1 &&
-                                  selectedAnswer !== null)
-                              ? "bg-slate-700/30 border-slate-600/50 text-slate-300 hover:border-amber-400 hover:bg-slate-700/50 cursor-pointer"
-                              : isPast
-                              ? "bg-slate-600/30 border-slate-600/50 text-slate-400 cursor-pointer"
-                              : "bg-slate-700/30 border-slate-600/50 text-slate-500 cursor-pointer"
-                          }
-                        `}
+                        className={`relative w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-all duration-300 border-2 ${
+                          isCurrent
+                            ? "bg-gradient-to-r from-amber-500 to-orange-500 border-amber-400 text-white shadow-lg shadow-amber-500/30 cursor-pointer"
+                            : isAnswered
+                            ? "bg-green-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30 cursor-pointer"
+                            : "bg-slate-700/30 border-slate-600/50 text-slate-400 hover:border-amber-400 hover:bg-slate-700/50 cursor-pointer"
+                        }`}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => {
@@ -347,7 +362,6 @@ export default function Quiz() {
                             type: "SET_QUESTION_INDEX",
                             payload: index,
                           });
-                          setSelectedAnswer(null);
                         }}
                       >
                         {/* Question number */}
@@ -363,7 +377,6 @@ export default function Quiz() {
                             <span className="text-white text-xs">✓</span>
                           </motion.div>
                         )}
-
                         {isCurrent && (
                           <motion.div
                             className="absolute inset-0 rounded-lg border-2 border-amber-300"
@@ -383,9 +396,7 @@ export default function Quiz() {
                   })}
                 </div>
               </div>
-
-              {/* Legend */}
-              <div className="mt-6 pt-4 border-t border-slate-700/50 flex gap-25">
+              <div className="mt-6 pt-4 border-t border-slate-700/50 flex justify-between items-center">
                 <div className="space-y-2 text-xs">
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded border"></div>
@@ -433,13 +444,13 @@ export default function Quiz() {
                     transition={{ delay: 0.2, duration: 0.3 }}
                     className="text-2xl font-semibold text-white mb-6 leading-relaxed"
                   >
-                    {currentQuestion.question}
+                    {currentQuestion.content}
                   </motion.h2>
 
                   <div className="space-y-4">
                     {currentQuestion.options.map((option, index) => (
                       <motion.label
-                        key={index}
+                        key={option.id}
                         initial={{ opacity: 0, x: 30 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.1 + index * 0.1, duration: 0.3 }}
@@ -450,28 +461,28 @@ export default function Quiz() {
                         }}
                         whileTap={{ scale: 0.98 }}
                         className={`flex items-center p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 relative overflow-hidden group ${
-                          selectedAnswer === index
+                          selectedOptionId === option.id
                             ? "border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/20"
                             : "border-slate-600/50 hover:border-slate-500 bg-slate-700/20 hover:bg-slate-700/40"
                         }`}
                       >
                         <input
                           type="radio"
-                          name="answer"
-                          value={index}
-                          checked={selectedAnswer === index}
-                          onChange={() => handleAnswerSelect(index)}
+                          name={`answer-${currentQuestion.id}`}
+                          value={option.id}
+                          checked={selectedOptionId === option.id}
+                          onChange={() => handleAnswerSelect(option.id)}
                           className="sr-only"
                         />
 
                         <div
                           className={`w-5 h-5 rounded-full mr-4 border-2 flex items-center justify-center transition-all duration-300 ${
-                            selectedAnswer === index
+                            selectedOptionId === option.id
                               ? "border-amber-500 bg-amber-500"
                               : "border-slate-400 group-hover:border-slate-300"
                           }`}
                         >
-                          {selectedAnswer === index && (
+                          {selectedOptionId === option.id && (
                             <motion.div
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
@@ -479,12 +490,10 @@ export default function Quiz() {
                             />
                           )}
                         </div>
-
                         <span className="text-slate-200 flex-1 group-hover:text-white transition-colors duration-300">
-                          {option}
+                          {option.content}
                         </span>
-
-                        {selectedAnswer === index && (
+                        {selectedOptionId === option.id && (
                           <motion.div
                             initial={{ opacity: 0, scale: 0 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -530,21 +539,19 @@ export default function Quiz() {
                 </button>
               </div>
               <div className="grid grid-cols-5 gap-2">
-                {[...Array(QUIZ_CONFIG.TOTAL_QUESTIONS)].map((_, index) => {
-                  const questionId = SAMPLE_QUIZ_QUESTIONS[index]?.id;
-                  const isAnswered = state.answers.some(
-                    (answer) => answer.questionId === questionId
+                {questions.map((question, index) => {
+                  const isAnswered = answers.some(
+                    (answer) => answer.questionId === question.id
                   );
-                  const isCurrent = state.currentQuestionIndex === index;
+                  const isCurrent = currentQuestionIndex === index;
                   return (
                     <button
-                      key={index}
+                      key={question.id}
                       onClick={() => {
                         dispatch({
                           type: "SET_QUESTION_INDEX",
                           payload: index,
                         });
-                        setSelectedAnswer(null);
                         setMobilePanelOpen(false);
                       }}
                       className={`w-12 h-12 rounded-lg border-2 text-sm font-medium ${
@@ -565,36 +572,31 @@ export default function Quiz() {
         )}
       </div>
 
-      {/* Fixed Navigation Bar */}
       <div className="fixed xl:bottom-36 bottom-1 left-0 right-0 z-20 ">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
-          {state.currentQuestionIndex > 0 ? (
+          {currentQuestionIndex > 0 ? (
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Button
                 onClick={handlePrevious}
                 variant="outline"
+                disabled={isNavigating}
                 className="flex cursor-pointer text-lg rounded-lg items-center bg-slate-700/30 border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:border-slate-500 py-5"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4 mr-2" />
                 <span>Quay lại</span>
               </Button>
             </motion.div>
           ) : (
             <div />
           )}
-
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Button
               onClick={handleNext}
-              disabled={isLastQuestion && !allAnswered}
+              disabled={isNavigating || (isLastQuestion && !allAnswered)}
               className="flex items-center text-lg rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white disabled:opacity-50 py-5 relative overflow-hidden group"
             >
-              <span>
-                {state.currentQuestionIndex === QUIZ_CONFIG.TOTAL_QUESTIONS - 1
-                  ? "Hoàn thành"
-                  : "Tiếp theo"}
-              </span>
-              <ArrowRight className="w-4 h-4" />
+              <span>{isLastQuestion ? "Hoàn thành" : "Tiếp theo"}</span>
+              <ArrowRight className="w-4 h-4 ml-2" />
               <div className="absolute cursor-pointer inset-0 bg-gradient-to-r from-amber-400 to-orange-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             </Button>
           </motion.div>

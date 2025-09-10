@@ -1,62 +1,73 @@
-import type { StudentInfo, QuizAnswer, QuizResult, AvatarConfig } from '../types';
+import type { StudentInfo, QuizResult, AvatarConfig, QuizData } from "../types";
 
+// Custom answer type for storing user's choices
+export interface QuizAnswer {
+  questionId: string;
+  optionId: string;
+}
 // Application state interface
 export interface AppState {
   studentInfo: StudentInfo | null;
+  quizData: QuizData | null;
   currentQuestionIndex: number;
   answers: QuizAnswer[];
   quizStartTime: Date | null;
   isQuizCompleted: boolean;
   quizResult: QuizResult | null;
-  timeRemaining: number;
   avatar: AvatarConfig;
 }
 
 // Action types
 export type AppAction =
-  | { type: 'SET_STUDENT_INFO'; payload: StudentInfo }
-  | { type: 'SET_AVATAR'; payload: AvatarConfig }
-  | { type: 'START_QUIZ'; payload: { startTime: Date } }
-  | { type: 'NEXT_QUESTION' }
-  | { type: 'PREV_QUESTION' }
-  | { type: 'SET_QUESTION_INDEX'; payload: number }
-  | { type: 'SET_ANSWER'; payload: QuizAnswer }
-  | { type: 'COMPLETE_QUIZ'; payload: QuizResult }
-  | { type: 'RESET_QUIZ' }
-  | { type: 'UPDATE_TIME'; payload: { timeRemaining: number } }
-  | { type: 'RESET_STATE' };
+  | { type: "SET_STUDENT_INFO"; payload: StudentInfo }
+  | { type: "SET_AVATAR"; payload: AvatarConfig }
+  | { type: "START_QUIZ"; payload: { startTime: Date } }
+  | { type: "SET_QUIZ_DATA"; payload: QuizData }
+  | { type: "NEXT_QUESTION" }
+  | { type: "PREV_QUESTION" }
+  | { type: "SET_QUESTION_INDEX"; payload: number }
+  | { type: "SET_ANSWER"; payload: QuizAnswer }
+  | { type: "COMPLETE_QUIZ"; payload: QuizResult }
+  | { type: "RESET_QUIZ" }
+  | { type: "RESET_STATE" };
 
 // Initial state
 export const initialState: AppState = {
   studentInfo: null,
+  quizData: null,
   currentQuestionIndex: 0,
   answers: [],
   quizStartTime: null,
   isQuizCompleted: false,
   quizResult: null,
-  timeRemaining: 30 * 60 * 1000, // 30 minutes in milliseconds
   avatar: {
-    accessory: 'none',
-    shirt: 'none',
+    accessory: "none",
+    shirt: "none",
   },
 };
 
 // Reducer function
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-    case 'SET_STUDENT_INFO':
+    case "SET_STUDENT_INFO":
       return {
         ...state,
         studentInfo: action.payload,
       };
-    case 'SET_AVATAR': {
+    case "SET_AVATAR": {
       const updatedStudent = state.studentInfo
         ? { ...state.studentInfo, avatar: action.payload }
         : state.studentInfo;
       return { ...state, avatar: action.payload, studentInfo: updatedStudent };
     }
 
-    case 'START_QUIZ':
+    case "SET_QUIZ_DATA":
+      return {
+        ...state,
+        quizData: action.payload,
+      };
+
+    case "START_QUIZ":
       return {
         ...state,
         quizStartTime: action.payload.startTime,
@@ -65,25 +76,30 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         isQuizCompleted: false,
       };
 
-    case 'NEXT_QUESTION':
+    case "NEXT_QUESTION": {
+      const totalQuestions = state.quizData?.questions.length ?? 0;
       return {
         ...state,
-        currentQuestionIndex: Math.min(state.currentQuestionIndex + 1, 20), // Assuming 21 questions (0-20)
+        currentQuestionIndex: Math.min(
+          state.currentQuestionIndex + 1,
+          totalQuestions - 1
+        ),
       };
+    }
 
-    case 'PREV_QUESTION':
+    case "PREV_QUESTION":
       return {
         ...state,
         currentQuestionIndex: Math.max(state.currentQuestionIndex - 1, 0),
       };
 
-    case 'SET_QUESTION_INDEX':
+    case "SET_QUESTION_INDEX":
       return {
         ...state,
         currentQuestionIndex: Math.max(0, Math.min(action.payload, 20)),
       };
 
-    case 'SET_ANSWER': {
+    case "SET_ANSWER": {
       const existingAnswerIndex = state.answers.findIndex(
         (answer) => answer.questionId === action.payload.questionId
       );
@@ -105,14 +121,14 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       };
     }
 
-    case 'COMPLETE_QUIZ':
+    case "COMPLETE_QUIZ":
       return {
         ...state,
         isQuizCompleted: true,
         quizResult: action.payload,
       };
 
-    case 'RESET_QUIZ':
+    case "RESET_QUIZ":
       return {
         ...state,
         currentQuestionIndex: 0,
@@ -120,17 +136,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         quizStartTime: null,
         isQuizCompleted: false,
         quizResult: null,
-        timeRemaining: 30 * 60 * 1000,
       };
 
-    case 'UPDATE_TIME':
+    case "RESET_STATE":
       return {
-        ...state,
-        timeRemaining: action.payload.timeRemaining,
+        ...initialState,
+        quizData: null,
       };
-
-    case 'RESET_STATE':
-      return initialState;
 
     default:
       return state;

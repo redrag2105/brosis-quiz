@@ -23,6 +23,23 @@ export interface QuizQuestion {
   category?: string;
 }
 
+// ===== NEW =====
+export interface Option {
+  id: string;
+  content: string;
+}
+export interface Question {
+  id: string;
+  content: string;
+  order: number;
+  options: Option[];
+}
+export interface QuizData {
+  attemptId: string;
+  questions: Question[];
+}
+
+// =================================
 export interface QuizAnswer {
   questionId: string;
   selectedAnswer: number;

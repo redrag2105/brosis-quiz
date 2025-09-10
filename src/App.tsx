@@ -7,10 +7,13 @@ import Quiz from "./pages/Quiz";
 import Results from "./pages/Results";
 import Leaderboard from "./pages/Leaderboard";
 import AvatarBuilder from "./pages/AvatarBuilder";
+import { Toaster } from "./components/ui/sonner";
 
 function App() {
   return (
     <AppProvider>
+      <Toaster richColors position="bottom-right" />
+
       <Router>
         <Routes>
           <Route path={ROUTES.HOME} element={<Home />} />

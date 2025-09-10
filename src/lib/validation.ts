@@ -1,32 +1,41 @@
 import { z } from "zod";
+import type { House } from "../types";
+
+const HOUSE_VALUES: House[] = ["faerie", "phoenix", "thunderbird", "unicorn"];
 
 export const studentRegistrationSchema = z.object({
   ten: z
     .string()
-    .min(2, "Tên phải có ít nhất 2 ký tự")
-    .max(50, "Tên không được quá 50 ký tự")
+    .min(2, "Họ và tên phải có ít nhất 2 ký tự")
+    .max(100, "Họ và tên không hợp lệ")
     .regex(/^[a-zA-ZÀ-ỹ\s]+$/, "Tên chỉ được chứa chữ cái và khoảng trắng"),
 
-  mssv: z.string().regex(/^[A-Z]{2}\d{6}$/, "MSSV sai mẹ định dạng r"),
-
-  sdt: z.string().regex(/^(0|\+84)[1-9]\d{8}$/, "Số điện thoại không hợp lệ"),
-
-  lop: z
+  mssv: z
     .string()
-    .min(1, "Vui lòng nhập lớp")
-    .max(20, "Tên lớp không được quá 20 ký tự"),
+    .min(1, "MSSV không được để trống")
+    .regex(/^(SE|SA|SS)\d{6}$/, "MSSV không đúng định dạng"),
+
+  sdt: z
+    .string()
+    .min(1, "Số điện thoại không được để trống")
+    .refine(
+      (val) => {
+        const phoneRegex = /^(84|0(3|5|7|8|9))\d{8}$/;
+        return phoneRegex.test(val);
+      },
+      { message: "Số điện thoại không hợp lệ" }
+    ),
+
+  lop: z.string().min(1, 'Lớp không được để trống').regex(/^[1-6]$/, 'Lớp không hợp lệ'),
+
+  daiDoi: z.string().min(1, 'Đại đội không được để trống').regex(/^[1-6]$/, 'Đại đội không hợp lệ'),
 
   nha: z
     .string()
-    .min(1, "Vui lòng chọn nhà")
-    .refine((val) => val !== undefined, {
-      message: "Vui lòng chọn một nhà hợp lệ",
+    .min(1, "Nhà không được để trống")
+    .refine((val) => HOUSE_VALUES.includes(val as House), {
+      message: "Nhà không hợp lệ",
     }),
-
-  daiDoi: z
-    .string()
-    .min(1, "Vui lòng nhập đại đội")
-    .max(20, "Tên đại đội không được quá 20 ký tự"),
 });
 
 export type StudentRegistrationForm = z.infer<typeof studentRegistrationSchema>;
