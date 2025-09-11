@@ -1,11 +1,9 @@
-import type { StudentInfo, QuizResult, AvatarConfig, QuizData } from "../types";
+import type { StudentInfo, AvatarConfig, QuizData, QuizResult } from "../types";
 
-// Custom answer type for storing user's choices
 export interface QuizAnswer {
   questionId: string;
   optionId: string;
 }
-// Application state interface
 export interface AppState {
   studentInfo: StudentInfo | null;
   quizData: QuizData | null;

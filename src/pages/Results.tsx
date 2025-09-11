@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Trophy, Clock, Target, Sparkles, Star, Award } from "lucide-react";
+import { Trophy, Sparkles, Star, Award } from "lucide-react";
 import { useAppContext } from "../context/hooks";
 import { ROUTES } from "../constants";
 import { Button } from "../components/ui/button";
@@ -17,8 +17,11 @@ export default function Results() {
       return;
     }
 
-    // Show confetti animation for good scores
-    if (state.quizResult.score >= 15) {
+    // Show confetti for high percentage
+    const correct = Number(state.quizResult.correct_count ?? 0);
+    const total = Number(state.quizResult.total_count ?? 1);
+    const percentage = Math.round((correct / Math.max(total, 1)) * 100);
+    if (percentage >= 80) {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 4000);
     }
@@ -36,8 +39,23 @@ export default function Results() {
     );
   }
 
-  const { score, totalQuestions, timeSpent } = state.quizResult;
-  const percentage = Math.round((score / totalQuestions) * 100);
+  const correctCount = Number(state.quizResult.correct_count ?? 0);
+  const totalCount = Number(state.quizResult.total_count ?? 0);
+  const percentage = Math.round((correctCount / Math.max(totalCount, 1)) * 100);
+
+  const startedAt = state.quizResult.started_at
+    ? new Date(state.quizResult.started_at)
+    : null;
+  const finishedAt = state.quizResult.finished_at
+    ? new Date(state.quizResult.finished_at)
+    : null;
+  const timeSpent =
+    startedAt && finishedAt
+      ? Math.max(
+          0,
+          Math.floor((finishedAt.getTime() - startedAt.getTime()) / 1000)
+        )
+      : 0;
   const minutes = Math.floor(timeSpent / 60);
   const seconds = timeSpent % 60;
 
@@ -45,14 +63,6 @@ export default function Results() {
     if (percentage >= 80) return "from-emerald-400 to-green-500";
     if (percentage >= 60) return "from-amber-400 to-orange-500";
     return "from-orange-400 to-red-500";
-  };
-
-  const getScoreMessage = (percentage: number) => {
-    if (percentage >= 90) return "Xuất sắc! 🌟";
-    if (percentage >= 80) return "Rất tốt! 👏";
-    if (percentage >= 70) return "Tốt! 👍";
-    if (percentage >= 60) return "Khá! 😊";
-    return "Cần cố gắng thêm! 💪";
   };
 
   const floatingElements = [...Array(12)].map((_, i) => ({
@@ -178,7 +188,7 @@ export default function Results() {
           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-yellow-500/5 rounded-3xl pointer-events-none"></div>
 
           {/* Header */}
-          <div className="text-center mb-8 relative z-10">
+          <div className="text-left mb-8 relative z-10">
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
@@ -205,96 +215,92 @@ export default function Results() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
-              className="text-4xl font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent mb-3"
+              className="text-3xl font-semibold text-slate-100 mb-2"
             >
-              Kết quả tuyệt vời!
+              Kết quả bài thi
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
-              className="text-slate-300 text-lg"
+              className="text-slate-300 text-sm"
             >
-              Chúc mừng{" "}
-              <span className="font-semibold text-amber-400">
-                {state.studentInfo.ten}
-              </span>
-              ! 🎉
+              Tổng quan kết quả và thông tin bài thi của bạn
             </motion.p>
           </div>
 
-          {/* Score Display */}
+          {/* Score Display - redesigned */}
           <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            initial={{ opacity: 0, y: 30, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ delay: 0.6, duration: 0.6 }}
-            className="bg-gradient-to-br from-slate-700/40 to-slate-800/40 border border-slate-600/50 rounded-2xl p-8 mb-8 backdrop-blur-sm relative overflow-hidden"
+            className="bg-slate-800/50 border border-slate-600/50 rounded-2xl p-6 mb-8 backdrop-blur-sm relative overflow-hidden"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5 rounded-2xl pointer-events-none"></div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+              <div className="col-span-1 text-center">
+                <div
+                  className={`mx-auto w-28 h-28 rounded-full flex items-center justify-center ${getScoreColor(
+                    percentage
+                  )} bg-gradient-to-r`}
+                  style={{ backgroundClip: "padding-box" }}
+                >
+                  <div className="text-5xl font-bold text-white">
+                    {percentage}%
+                  </div>
+                </div>
+                <div className="text-sm text-slate-300 mt-2">
+                  {correctCount}/{totalCount} câu đúng
+                </div>
+              </div>
 
-            <div className="text-center relative z-10">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.8, type: "spring", stiffness: 100 }}
-                className={`text-7xl font-bold mb-4 bg-gradient-to-r ${getScoreColor(
-                  percentage
-                )} bg-clip-text text-transparent`}
-              >
-                {percentage}%
-              </motion.div>
+              <div className="col-span-1 md:col-span-2">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between px-4 py-3 bg-slate-700/30 rounded-lg border border-slate-600">
+                    <div className="text-sm text-slate-400">Điểm</div>
+                    <div className="text-lg font-semibold text-amber-300">
+                      {state.quizResult.score}
+                    </div>
+                  </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1, duration: 0.5 }}
-                className="text-xl text-slate-300 mb-3"
-              >
-                {score}/{totalQuestions} câu đúng
-              </motion.div>
+                  <div className="flex items-center justify-between px-4 py-3 bg-slate-700/30 rounded-lg border border-slate-600">
+                    <div className="text-sm text-slate-400">Tổng câu hỏi</div>
+                    <div className="text-lg font-semibold text-cyan-300">
+                      {totalCount}
+                    </div>
+                  </div>
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.2, duration: 0.5 }}
-                className="text-lg font-semibold text-cyan-400 bg-cyan-500/10 rounded-lg p-3"
-              >
-                {getScoreMessage(percentage)}
-              </motion.div>
+                  <div className="flex items-center justify-between px-4 py-3 bg-slate-700/30 rounded-lg border border-slate-600">
+                    <div className="text-sm text-slate-400">Thời gian làm</div>
+                    <div className="text-lg font-semibold text-blue-200">
+                      {minutes}:{seconds.toString().padStart(2, "0")}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
 
-          {/* Stats */}
+          {/* Additional metadata */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.6 }}
-            className="grid grid-cols-2 gap-6 mb-8 relative z-10"
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 relative z-10"
           >
-            <motion.div
-              whileHover={{ scale: 1.05, y: -5 }}
-              className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-5 text-center backdrop-blur-sm"
-            >
-              <Clock className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-              <div className="text-sm text-slate-400 mb-1">
-                Thời gian hoàn thành
+            <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-4">
+              <div className="text-sm text-slate-400 mb-1">Bắt đầu</div>
+              <div className="font-medium text-slate-100">
+                {startedAt ? startedAt.toLocaleString() : "-"}
               </div>
-              <div className="font-bold text-blue-400 text-lg">
-                {minutes}:{seconds.toString().padStart(2, "0")}
-              </div>
-            </motion.div>
+            </div>
 
-            <motion.div
-              whileHover={{ scale: 1.05, y: -5 }}
-              className="bg-green-500/10 border border-green-500/30 rounded-xl p-5 text-center backdrop-blur-sm"
-            >
-              <Target className="w-8 h-8 text-green-400 mx-auto mb-3" />
-              <div className="text-sm text-slate-400 mb-1">Độ chính xác</div>
-              <div className="font-bold text-green-400 text-lg">
-                {percentage}%
+            <div className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-4">
+              <div className="text-sm text-slate-400 mb-1">Hoàn thành</div>
+              <div className="font-medium text-slate-100">
+                {finishedAt ? finishedAt.toLocaleString() : "-"}
               </div>
-            </motion.div>
+            </div>
           </motion.div>
 
           {/* Student Info */}

@@ -78,21 +78,25 @@ export default function Quiz() {
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
   const submitAnswer = useCallback(
-    (questionId: string, optionId: string) => {
+    async (questionId: string, optionId: string) => {
       if (!attemptId) return;
 
+      // Update local state first so UI reflects the choice immediately
       dispatch({
         type: "SET_ANSWER",
         payload: { questionId, optionId },
       });
 
-      answerApi.updateAnswer(attemptId, questionId, optionId).catch((error) => {
+      try {
+        // Return the API promise so callers can await completion when needed
+        await answerApi.updateAnswer(attemptId, questionId, optionId);
+      } catch (error) {
         toast.error("Lỗi khi lưu câu trả lời", {
           description:
             "Your progress might not be saved. Please check your connection.",
         });
         console.error("Failed to save answer:", error);
-      });
+      }
     },
     [attemptId, dispatch]
   );
@@ -162,7 +166,8 @@ export default function Quiz() {
 
     const lastAnswer = answers.find((a) => a.questionId === currentQuestion.id);
     if (selectedOptionId && selectedOptionId !== lastAnswer?.optionId) {
-      submitAnswer(currentQuestion.id, selectedOptionId);
+      // Ensure last answer is saved before final submit to avoid race conditions
+      await submitAnswer(currentQuestion.id, selectedOptionId);
     }
 
     if (!isAllQuestionsAnswered) {
@@ -172,7 +177,23 @@ export default function Quiz() {
 
     setIsSubmitting(true);
     try {
-      await answerApi.submitApi(attemptId);
+      const res = await answerApi.submitApi(attemptId);
+
+      const serverResult = res.result;
+
+      const quizResult = {
+        id: serverResult.id,
+        student_id: serverResult.student_id ?? state.studentInfo?.mssv ?? "",
+        status: serverResult.status ?? "",
+        started_at: serverResult.started_at ?? new Date().toISOString(),
+        finished_at: serverResult.finished_at ?? new Date().toISOString(),
+        total_count: String(serverResult.total_count ?? "0"),
+        correct_count: String(serverResult.correct_count ?? "0"),
+        score: Number(serverResult.score ?? 0),
+      };
+
+      dispatch({ type: "COMPLETE_QUIZ", payload: quizResult });
+
       toast.success("Bài thi hoàn tất!", {
         description: "Đang chuyển bạn đến trang kết quả.",
       });

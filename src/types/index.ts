@@ -31,22 +31,18 @@ export interface QuizData {
   questions: Question[];
 }
 
-// =================================
-export interface QuizAnswer {
-  questionId: string;
-  selectedAnswer: number;
-  isCorrect: boolean;
-}
-
 export interface QuizResult {
-  studentInfo: StudentInfo;
-  answers: QuizAnswer[];
+  id: string;
+  student_id: string;
+  status: string;
+  started_at: string;
+  finished_at: string;
+  total_count: string;
+  correct_count: string;
   score: number;
-  totalQuestions: number;
-  completedAt: Date;
-  timeSpent: number; // in seconds
 }
 
+// =================================
 export interface LeaderboardEntry {
   rank: number;
   studentInfo: StudentInfo;
