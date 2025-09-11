@@ -1,4 +1,4 @@
-import axiosInstance from "./axiosConfig";
+import axiosInstance from "../axiosConfig";
 
 interface UpdateAnswerResponse {
   message: string;
@@ -19,6 +19,18 @@ export const answerApi = {
     const response = await axiosInstance.put<UpdateAnswerResponse>(
       `/attempt/${attemptId}/answer/${questionId}`,
       { option_id: optionId }
+    );
+    return response.data;
+  },
+
+  /**
+   * Submits the entire quiz attempt for evaluation.
+   * @param attemptId - The ID of the quiz attempt to be submitted.
+   */
+
+  submitApi: async (attemptId: string) => {
+    const response = await axiosInstance.post<UpdateAnswerResponse>(
+      `/attempt/${attemptId}/submit`
     );
     return response.data;
   },

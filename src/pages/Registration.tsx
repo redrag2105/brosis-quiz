@@ -23,25 +23,71 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import type { House } from "../types";
+import { registerApi } from "@/apis/register/registerApi";
+import { toast } from "sonner";
+import { useState } from "react";
+
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string | { [key: string]: string };
+    };
+  };
+}
 
 export default function Registration() {
   const navigate = useNavigate();
   const { dispatch } = useAppContext();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<Omit<StudentRegistrationForm, "nha">>({
     resolver: zodResolver(studentRegistrationSchema.omit({ nha: true })),
   });
 
   const onSubmit = async (data: Omit<StudentRegistrationForm, "nha">) => {
-    dispatch({
-      type: "SET_STUDENT_INFO",
-      payload: { ...data, nha: "phoenix" as House },
-    });
-    navigate(ROUTES.AVATAR);
+    setIsProcessing(true);
+    try {
+      await registerApi.register({
+        full_name: data.ten,
+        student_id: data.mssv,
+        phone_number: data.sdt,
+        class_code: data.lop,
+        company_unit: data.daiDoi,
+      });
+
+      dispatch({
+        type: "SET_STUDENT_INFO",
+        payload: { ...data, nha: "phoenix" as House },
+      });
+      toast.success("Đăng kí thành công!");
+      navigate(ROUTES.AVATAR);
+    } catch (err: unknown) {
+      const error = err as ApiError;
+      const message = error.response?.data?.message;
+
+      if (typeof message === "object" && message !== null) {
+        Object.entries(message).forEach(([field, msg]) => {
+          setError(field as keyof Omit<StudentRegistrationForm, "nha">, {
+            type: "server",
+            message: msg,
+          });
+          toast.error("Đăng kí không thành công!", { description: msg });
+        });
+      } else if (message) {
+        toast.error("Đăng kí không thành công!", { description: message });
+      } else {
+        toast.error("An Error Occurred", {
+          description: "Could not connect to the server. Please try again.",
+        });
+      }
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const floatingElements = [...Array(8)].map((_, i) => ({
@@ -54,9 +100,7 @@ export default function Registration() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
-      {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Large gradient orbs */}
         {[...Array(4)].map((_, i) => (
           <motion.div
             key={`orb-${i}`}
@@ -83,7 +127,6 @@ export default function Registration() {
           />
         ))}
 
-        {/* Floating sparkles */}
         {floatingElements.map((element) => (
           <motion.div
             key={element.id}
@@ -110,7 +153,6 @@ export default function Registration() {
         ))}
       </div>
 
-      {/* Main content */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -118,10 +160,8 @@ export default function Registration() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-3xl shadow-2xl p-8 max-w-md w-full relative overflow-hidden"
         >
-          {/* Card background glow */}
           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-yellow-500/5 rounded-3xl"></div>
 
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -152,14 +192,12 @@ export default function Registration() {
           </motion.div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Tên + MSSV */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
               className="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
-              {/* Tên */}
               <div className="space-y-2">
                 <Label
                   htmlFor="ten"
@@ -191,7 +229,6 @@ export default function Registration() {
                 </div>
               </div>
 
-              {/* MSSV */}
               <div className="space-y-2">
                 <Label
                   htmlFor="mssv"
@@ -224,7 +261,6 @@ export default function Registration() {
               </div>
             </motion.div>
 
-            {/* SĐT */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -261,14 +297,12 @@ export default function Registration() {
               </div>
             </motion.div>
 
-            {/* Lớp + Đại đội */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5, duration: 0.5 }}
               className="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
-              {/* Lớp */}
               <div className="space-y-2">
                 <Label
                   htmlFor="lop"
@@ -300,7 +334,6 @@ export default function Registration() {
                 </div>
               </div>
 
-              {/* Đại đội */}
               <div className="space-y-2">
                 <Label
                   htmlFor="daiDoi"
@@ -333,14 +366,12 @@ export default function Registration() {
               </div>
             </motion.div>
 
-            {/* Submit button */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.5 }}
               className="pt-4 relative w-60 mx-auto"
             >
-              {/* Floating sparkles around button */}
               <div className="absolute inset-0 pointer-events-none">
                 {[...Array(8)].map((_, i) => (
                   <motion.div
@@ -376,7 +407,6 @@ export default function Registration() {
                 whileTap={{ scale: 0.95 }}
                 className="relative"
               >
-                {/* Magical glow backdrop */}
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-amber-500/30 to-orange-500/30 rounded-2xl blur-xl"
                   animate={{
@@ -392,12 +422,11 @@ export default function Registration() {
 
                 <Button
                   type="submit"
+                  disabled={isProcessing}
                   className="w-60 relative cursor-pointer bg-gradient-to-r text-lg from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:via-orange-400 hover:to-amber-500 text-white font-bold py-6 px-8 rounded-2xl transition-all duration-500 overflow-hidden group shadow-2xl shadow-amber-500/25"
                 >
-                  {/* Animated background layers */}
                   <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                  {/* Shimmer effect */}
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                     animate={{
@@ -411,9 +440,10 @@ export default function Registration() {
                     }}
                   />
 
-                  {/* Button content */}
                   <span className="relative z-10 flex items-center justify-center space-x-3">
-                    <span className="text-lg tracking-wide">Tiếp tục</span>
+                    <span className="text-lg tracking-wide">
+                      {isProcessing ? "Đang xử lý..." : "Tiếp tục"}
+                    </span>
                     <motion.div
                       animate={{
                         rotate: [0, -5, 5, 0],
@@ -431,7 +461,6 @@ export default function Registration() {
                     </motion.div>
                   </span>
 
-                  {/* Magical particle effects on hover */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                     {[...Array(12)].map((_, i) => (
                       <motion.div
@@ -460,7 +489,6 @@ export default function Registration() {
             </motion.div>
           </form>
         </motion.div>
-        {/* Back button */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

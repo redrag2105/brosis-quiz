@@ -10,9 +10,9 @@ import { ROUTES } from "../constants";
 import GradientText from "@/components/gradient-text";
 import { TextMorph } from "@/components/ui/text-morph";
 import { useForm } from "react-hook-form";
-import { registerApi } from "@/apis/registerApi";
+import { registerApi } from "@/apis/register/registerApi";
 import { toast } from "sonner";
-import { attemptApi } from "@/apis/attemptApi";
+import { attemptApi } from "@/apis/register/attemptApi";
 
 const HOUSES: { key: House; label: string; img: string }[] = [
   { key: "faerie", label: "Faerie", img: "/characters/Skin/faerie.svg" },
@@ -80,11 +80,7 @@ type AccessoryCategory =
   | "shirt";
 
 type FormData = {
-  full_name: string;
   student_id: string;
-  phone_number: string;
-  class_code: string;
-  company_unit: string;
   house: string;
   accessory: string;
   shirt: string;
@@ -142,12 +138,8 @@ export default function AvatarBuilder() {
     if (!state.studentInfo) return;
     setIsProcessing(true);
 
-    const registrationPayload = {
-      full_name: state.studentInfo.ten,
+    const updatePayload = {
       student_id: state.studentInfo.mssv,
-      phone_number: state.studentInfo.sdt,
-      class_code: state.studentInfo.lop,
-      company_unit: state.studentInfo.daiDoi,
       house: state.studentInfo.nha.toUpperCase(),
       accessory: state.avatar.accessory,
       shirt: state.avatar.shirt,
@@ -158,7 +150,7 @@ export default function AvatarBuilder() {
     };
 
     try {
-      await registerApi(registrationPayload);
+      await registerApi.updateInfo(updatePayload);
 
       toast.info("Đăng kí thành công!", {
         description: "Đang chuẩn bị bài thi cho bạn...",

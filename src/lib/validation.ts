@@ -13,7 +13,8 @@ export const studentRegistrationSchema = z.object({
   mssv: z
     .string()
     .min(1, "MSSV không được để trống")
-    .regex(/^(SE|SA|SS)\d{6}$/, "MSSV không đúng định dạng"),
+    .regex(/^(SE|SA|SS)\d{6}$/i, "MSSV không đúng định dạng")
+    .transform((val) => val.toUpperCase()),
 
   sdt: z
     .string()
@@ -26,9 +27,15 @@ export const studentRegistrationSchema = z.object({
       { message: "Số điện thoại không hợp lệ" }
     ),
 
-  lop: z.string().min(1, 'Lớp không được để trống').regex(/^[1-6]$/, 'Lớp không hợp lệ'),
+  lop: z
+    .string()
+    .min(1, "Lớp không được để trống")
+    .regex(/^[1-6]$/, "Lớp không hợp lệ"),
 
-  daiDoi: z.string().min(1, 'Đại đội không được để trống').regex(/^[1-6]$/, 'Đại đội không hợp lệ'),
+  daiDoi: z
+    .string()
+    .min(1, "Đại đội không được để trống")
+    .regex(/^[1-6]$/, "Đại đội không hợp lệ"),
 
   nha: z
     .string()

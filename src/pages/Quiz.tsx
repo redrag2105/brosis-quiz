@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -20,25 +20,22 @@ import { Button } from "../components/ui/button";
 import { Avatar } from "../components/avatar/Avatar";
 import type { House } from "../types";
 import { toast } from "sonner";
-import { answerApi } from "@/apis/answerApi";
+import { answerApi } from "@/apis/question/answerApi";
 
 export default function Quiz() {
   const navigate = useNavigate();
   const { state, dispatch } = useAppContext();
 
-  // Local state for the currently selected option before submission
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-  // Loading state specifically for the Next/Finish button API call
-  const [isNavigating, setIsNavigating] = useState(false);
-
-  // State for the count-up timer
   const [startTime] = useState(Date.now());
   const [elapsed, setElapsed] = useState(0);
-
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { quizData, studentInfo, currentQuestionIndex, answers } = state;
-  const questions = quizData?.questions ?? [];
+
+  const questions = useMemo(() => quizData?.questions ?? [], [quizData]);
+
   const attemptId = quizData?.attemptId;
   const totalQuestions = questions.length;
 
@@ -57,6 +54,8 @@ export default function Quiz() {
   };
   const houseLabel = HOUSE_LABEL_MAP[houseKey];
 
+  const prevQuestionIndexRef = useRef(currentQuestionIndex);
+
   useEffect(() => {
     if (!studentInfo || !quizData) {
       toast.error("Không tìm thấy thông tin bài thi", {
@@ -68,7 +67,6 @@ export default function Quiz() {
     }
   }, [studentInfo, quizData, state.quizStartTime, navigate, dispatch]);
 
-  // Count-up timer
   useEffect(() => {
     const timerId = setInterval(() => {
       setElapsed(Math.floor((Date.now() - startTime) / 1000));
@@ -77,89 +75,115 @@ export default function Quiz() {
   }, [startTime]);
 
   const currentQuestion = questions[currentQuestionIndex];
-  const answeredCount = answers.length;
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
-  const allAnswered = answeredCount === totalQuestions;
-  const progress =
-    totalQuestions > 0 ? (answers.length / totalQuestions) * 100 : 0;
 
-  // When question changes, check if there's already an answer in global state to display
+  const submitAnswer = useCallback(
+    (questionId: string, optionId: string) => {
+      if (!attemptId) return;
+
+      dispatch({
+        type: "SET_ANSWER",
+        payload: { questionId, optionId },
+      });
+
+      answerApi.updateAnswer(attemptId, questionId, optionId).catch((error) => {
+        toast.error("Lỗi khi lưu câu trả lời", {
+          description:
+            "Your progress might not be saved. Please check your connection.",
+        });
+        console.error("Failed to save answer:", error);
+      });
+    },
+    [attemptId, dispatch]
+  );
+
   useEffect(() => {
-    if (currentQuestion) {
+    const prevIndex = prevQuestionIndexRef.current;
+
+    if (prevIndex !== currentQuestionIndex) {
+      const previousQuestion = questions[prevIndex];
       const existingAnswer = answers.find(
-        (answer) => answer.questionId === currentQuestion.id
+        (a) => a.questionId === previousQuestion?.id
       );
-      setSelectedOptionId(existingAnswer?.optionId ?? null);
+
+      if (
+        previousQuestion &&
+        selectedOptionId &&
+        selectedOptionId !== existingAnswer?.optionId
+      ) {
+        submitAnswer(previousQuestion.id, selectedOptionId);
+      }
+
+      const newCurrentQuestion = questions[currentQuestionIndex];
+      if (newCurrentQuestion) {
+        const answerForNewQuestion = answers.find(
+          (a) => a.questionId === newCurrentQuestion.id
+        );
+        setSelectedOptionId(answerForNewQuestion?.optionId ?? null);
+      }
+
+      prevQuestionIndexRef.current = currentQuestionIndex;
     }
-  }, [currentQuestionIndex, answers, currentQuestion]);
+  }, [
+    currentQuestionIndex,
+    questions,
+    answers,
+    submitAnswer,
+    selectedOptionId,
+  ]);
 
   const handleAnswerSelect = (optionId: string) => {
     setSelectedOptionId(optionId);
   };
 
-  const handleNext = async () => {
-    if (isNavigating || !currentQuestion || !attemptId) return;
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      dispatch({ type: "PREV_QUESTION" });
+    }
+  };
 
-    if (isLastQuestion && !allAnswered) {
+  const isAllQuestionsAnswered = useMemo(() => {
+    const answeredIds = new Set(answers.map((a) => a.questionId));
+    if (selectedOptionId && currentQuestion) {
+      answeredIds.add(currentQuestion.id);
+    }
+    return answeredIds.size === totalQuestions;
+  }, [answers, selectedOptionId, currentQuestion, totalQuestions]);
+
+  const handleNextOrFinish = async () => {
+    if (!isLastQuestion) {
+      dispatch({ type: "NEXT_QUESTION" });
+      return;
+    }
+
+    if (!attemptId || isSubmitting) {
+      return;
+    }
+
+    const lastAnswer = answers.find((a) => a.questionId === currentQuestion.id);
+    if (selectedOptionId && selectedOptionId !== lastAnswer?.optionId) {
+      submitAnswer(currentQuestion.id, selectedOptionId);
+    }
+
+    if (!isAllQuestionsAnswered) {
       toast.error("Bạn phải hoàn thành tất cả câu hỏi trước khi kết thúc.");
       return;
     }
 
-    const existingAnswer = answers.find(
-      (a) => a.questionId === currentQuestion.id
-    );
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const changed = selectedOptionId !== (existingAnswer as any)?.optionId;
-
-    // If answer changed (including selecting an answer for the first time), submit it.
-    if (changed && selectedOptionId) {
-      setIsNavigating(true);
-
-      try {
-        await answerApi.updateAnswer(
-          attemptId,
-          currentQuestion.id,
-          selectedOptionId
-        );
-
-        // Save the answer to global state
-        dispatch({
-          type: "SET_ANSWER",
-          payload: {
-            questionId: currentQuestion.id,
-            optionId: selectedOptionId,
-          },
-        });
-
-        toast.dismiss();
-        toast.success("Đã lưu!");
-      } catch (error) {
-        toast.dismiss();
-        toast.error("Lỗi khi lưu câu trả lời", {
-          description: "Vui lòng thử lại.",
-        });
-        console.error(error);
-        setIsNavigating(false);
-        return;
-      } finally {
-        setIsNavigating(false);
-      }
-    }
-
-    if (!isLastQuestion) {
-      dispatch({ type: "NEXT_QUESTION" });
-    } else {
+    setIsSubmitting(true);
+    try {
+      await answerApi.submitApi(attemptId);
       toast.success("Bài thi hoàn tất!", {
         description: "Đang chuyển bạn đến trang kết quả.",
       });
       navigate(ROUTES.RESULTS);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      dispatch({ type: "PREV_QUESTION" });
+    } catch (error) {
+      toast.error("Không thể nộp bài thi", {
+        description: "Vui lòng kiểm tra kết nối và thử lại.",
+      });
+      console.error("Submit attempt failed:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -171,6 +195,10 @@ export default function Quiz() {
       </div>
     );
   }
+
+  const progress =
+    totalQuestions > 0 ? (answers.length / totalQuestions) * 100 : 0;
+  const isFinishButtonDisabled = isLastQuestion && !isAllQuestionsAnswered;
 
   const floatingElements = [...Array(6)].map((_, i) => ({
     id: i,
@@ -579,7 +607,6 @@ export default function Quiz() {
               <Button
                 onClick={handlePrevious}
                 variant="outline"
-                disabled={isNavigating}
                 className="flex cursor-pointer text-lg rounded-lg items-center bg-slate-700/30 border-slate-600 text-slate-300 hover:bg-slate-700/50 hover:border-slate-500 py-5"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -591,12 +618,21 @@ export default function Quiz() {
           )}
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Button
-              onClick={handleNext}
-              disabled={isNavigating || (isLastQuestion && !allAnswered)}
+              onClick={handleNextOrFinish}
+              disabled={isFinishButtonDisabled || isSubmitting}
               className="flex items-center text-lg rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white disabled:opacity-50 py-5 relative overflow-hidden group"
             >
-              <span>{isLastQuestion ? "Hoàn thành" : "Tiếp theo"}</span>
-              <ArrowRight className="w-4 h-4 ml-2" />
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <span>Đang nộp bài...</span>
+                </>
+              ) : (
+                <>
+                  <span>{isLastQuestion ? "Hoàn thành" : "Tiếp theo"}</span>
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              )}
               <div className="absolute cursor-pointer inset-0 bg-gradient-to-r from-amber-400 to-orange-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             </Button>
           </motion.div>
