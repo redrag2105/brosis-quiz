@@ -16,19 +16,19 @@ export default function Home() {
     {
       icon: <BookOpen className="w-8 h-8 text-amber-400" />,
       title: "20 Câu hỏi",
-      description: "Chủ đề j đó ko biết nha feni",
+      description: "Thử thách kiến thức PCCC, lừa đảo mạng và sơ cấp cứu",
       color: "from-amber-500/20 to-orange-500/20",
     },
     {
       icon: <Users className="w-8 h-8 text-purple-400" />,
-      title: "Cộng đồng",
-      description: "lorem ipsum dolor sit amet",
+      title: "Đồng đội",
+      description: "Cùng team vượt thử thách DIGISURVIVE",
       color: "from-purple-500/20 to-pink-500/20",
     },
     {
       icon: <Trophy className="w-8 h-8 text-yellow-400" />,
       title: "Xếp hạng",
-      description: "So tài với mọi người",
+      description: "Chinh phục thử thách, ghi dấu trên bảng vàng",
       color: "from-yellow-500/20 to-orange-500/20",
     },
   ];
@@ -159,7 +159,7 @@ export default function Home() {
               transition={{ delay: 0.7 }}
               className="text-slate-300 text-lg"
             >
-              Trình là gì
+              Trải nghiệm sinh tồn dành cho Tân sinh viên K21
             </motion.p>
           </motion.div>
 
@@ -211,8 +211,8 @@ export default function Home() {
           >
             <p className="text-cyan-100 text-sm">
               <span className="text-2xl mr-2">🧠</span>
-              <strong>Lorem ipsum modet:</strong> Lorem ipsum, dolor sit amet
-              consectetur adipisicing eli
+              <strong>Sinh tồn thời đại số:</strong> Hành trình rèn luyện kỹ
+              năng thiết yếu để thích nghi và vững vàng trong mọi tình huống
             </p>
           </motion.div>
 
@@ -250,7 +250,9 @@ export default function Home() {
             transition={{ delay: 1.2, duration: 0.6 }}
             className="mt-6 pt-6 border-t border-slate-700/50"
           >
-            <p className="text-slate-500 text-xs">Đây là 1 cái footer j đó</p>
+            <p className="text-slate-500 text-xs">
+              Phoenix's House - Brothers&Sister 2025
+            </p>
           </motion.div>
         </motion.div>
       </div>
