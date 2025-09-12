@@ -32,7 +32,7 @@ export function Avatar({
   const [prevShirt, setPrevShirt] = useState<string | null>(null);
   const [prevSkin, setPrevSkin] = useState<string | null>(null);
 
-  const [currentAcc, setCurrentAcc] = useState<string>(config.accessory);
+  const [currentAcc, setCurrentAcc] = useState<string | undefined>(config.accessory);
   const [prevAcc, setPrevAcc] = useState<string | null>(null);
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export function Avatar({
   useEffect(() => {
     const next = config.accessory;
     if (next !== currentAcc) {
-      setPrevAcc(currentAcc);
+      setPrevAcc(currentAcc ?? null);
       setCurrentAcc(next);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
