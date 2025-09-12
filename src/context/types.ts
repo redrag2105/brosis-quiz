@@ -21,9 +21,12 @@ export type AppAction =
   | { type: "SET_AVATAR"; payload: AvatarConfig }
   | { type: "START_QUIZ"; payload: { startTime: Date } }
   | { type: "SET_QUIZ_DATA"; payload: QuizData }
+  // Set all answers at once, for loading history
+  | { type: "SET_ANSWERS"; payload: QuizAnswer[] }
   | { type: "NEXT_QUESTION" }
   | { type: "PREV_QUESTION" }
   | { type: "SET_QUESTION_INDEX"; payload: number }
+  // Set or Update a single answer, for users doing the quiz
   | { type: "SET_ANSWER"; payload: QuizAnswer }
   | { type: "COMPLETE_QUIZ"; payload: QuizResult }
   | { type: "RESET_QUIZ" }
@@ -70,7 +73,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         quizStartTime: action.payload.startTime,
         currentQuestionIndex: 0,
-        answers: [],
+        answers: state.answers.length ? state.answers : [],
         isQuizCompleted: false,
       };
 
@@ -91,11 +94,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         currentQuestionIndex: Math.max(state.currentQuestionIndex - 1, 0),
       };
 
-    case "SET_QUESTION_INDEX":
+    case "SET_QUESTION_INDEX": {
+      const maxIdx = Math.max(0, (state.quizData?.questions.length ?? 1) - 1);
       return {
         ...state,
-        currentQuestionIndex: Math.max(0, Math.min(action.payload, 20)),
+        currentQuestionIndex: Math.max(0, Math.min(action.payload, maxIdx)),
       };
+    }
 
     case "SET_ANSWER": {
       const existingAnswerIndex = state.answers.findIndex(
@@ -104,18 +109,23 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
       let newAnswers;
       if (existingAnswerIndex >= 0) {
-        // Update existing answer
         newAnswers = state.answers.map((answer, index) =>
           index === existingAnswerIndex ? action.payload : answer
         );
       } else {
-        // Add new answer
         newAnswers = [...state.answers, action.payload];
       }
 
       return {
         ...state,
         answers: newAnswers,
+      };
+    }
+
+    case "SET_ANSWERS": {
+      return {
+        ...state,
+        answers: action.payload,
       };
     }
 

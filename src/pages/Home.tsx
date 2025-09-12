@@ -236,7 +236,7 @@ export default function Home() {
               >
                 <span className="relative z-10 flex items-center justify-center space-x-2">
                   <span>🏆</span>
-                  <span>Bảng xếp hạng</span>
+                  <span>Bảng Xếp Hạng</span>
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
               </motion.button>
@@ -251,7 +251,7 @@ export default function Home() {
             className="mt-6 pt-6 border-t border-slate-700/50"
           >
             <p className="text-slate-500 text-xs">
-              Phoenix's House - Brothers&Sister 2025
+              Phoenix's House - Brothers&Sisters 2025
             </p>
           </motion.div>
         </motion.div>

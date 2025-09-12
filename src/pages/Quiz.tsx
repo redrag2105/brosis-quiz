@@ -15,19 +15,19 @@ import {
   Loader2,
 } from "lucide-react";
 import { useAppContext } from "../context/hooks";
-import { ROUTES } from "../constants";
+import { ROUTES, STORAGE_KEYS } from "../constants";
 import { Button } from "../components/ui/button";
 import { Avatar } from "../components/avatar/Avatar";
 import type { House } from "../types";
 import { toast } from "sonner";
 import { answerApi } from "@/apis/question/answerApi";
+import { attemptApi } from "@/apis/register/attemptApi";
 
 export default function Quiz() {
   const navigate = useNavigate();
   const { state, dispatch } = useAppContext();
 
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-  const [startTime] = useState(Date.now());
   const [elapsed, setElapsed] = useState(0);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,23 +56,100 @@ export default function Quiz() {
 
   const prevQuestionIndexRef = useRef(currentQuestionIndex);
 
+  // Resume flow: try loading from session storage when direct visiting /quiz or after reload
   useEffect(() => {
-    if (!studentInfo || !quizData) {
-      toast.error("Không tìm thấy thông tin bài thi", {
-        description: "Vui lòng đăng kí lại từ đầu.",
-      });
-      navigate(ROUTES.REGISTRATION);
-    } else if (!state.quizStartTime) {
-      dispatch({ type: "START_QUIZ", payload: { startTime: new Date() } });
-    }
-  }, [studentInfo, quizData, state.quizStartTime, navigate, dispatch]);
+    const ensureState = async () => {
+      try {
+        if (!state.studentInfo) {
+          const raw = sessionStorage.getItem(STORAGE_KEYS.STUDENT_INFO);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            dispatch({ type: "SET_STUDENT_INFO", payload: parsed });
+          }
+        }
+
+        if (!state.quizData) {
+          const attemptId = sessionStorage.getItem(STORAGE_KEYS.ATTEMPT_ID);
+          const status = sessionStorage.getItem(STORAGE_KEYS.ATTEMPT_STATUS);
+          const statusUpper = (status || "").toUpperCase();
+          const quizRaw = sessionStorage.getItem(STORAGE_KEYS.QUIZ_DATA);
+
+          if (!attemptId || statusUpper !== "ACTIVE" || !quizRaw) {
+            toast.error("Không tìm thấy thông tin bài thi", {
+              description: "Vui lòng đăng kí lại từ đầu.",
+            });
+            navigate(ROUTES.REGISTRATION);
+            return;
+          }
+
+          const parsed = JSON.parse(quizRaw);
+          if (!parsed?.questions?.length) {
+            toast.error("Không có câu hỏi hợp lệ", {
+              description: "Vui lòng thử lại.",
+            });
+            navigate(ROUTES.REGISTRATION);
+            return;
+          }
+
+          dispatch({ type: "SET_QUIZ_DATA", payload: parsed });
+
+          const res = await attemptApi.getHistory(attemptId);
+          const prefilled = res.result.answers
+            .filter((a) => a.option_id)
+            .map((a) => ({
+              questionId: String(a.question_id),
+              optionId: String(a.option_id),
+            }));
+          if (prefilled.length) {
+            dispatch({ type: "SET_ANSWERS", payload: prefilled });
+          }
+        }
+
+        if (!state.quizStartTime) {
+          const storedStart = sessionStorage.getItem(STORAGE_KEYS.QUIZ_START);
+          const start =
+            storedStart && !Number.isNaN(Number(storedStart))
+              ? new Date(Number(storedStart))
+              : new Date();
+          if (!storedStart) {
+            sessionStorage.setItem(
+              STORAGE_KEYS.QUIZ_START,
+              String(start.getTime())
+            );
+          }
+          dispatch({ type: "START_QUIZ", payload: { startTime: start } });
+        }
+      } catch (e) {
+        console.error("Resume flow failed", e);
+        toast.error("Không thể tải bài thi", {
+          description: "Vui lòng thử lại.",
+        });
+        navigate(ROUTES.REGISTRATION);
+      }
+    };
+
+    ensureState();
+  }, [
+    dispatch,
+    navigate,
+    state.quizData,
+    state.quizStartTime,
+    state.studentInfo,
+  ]);
 
   useEffect(() => {
+    const base = state.quizStartTime
+      ? state.quizStartTime.getTime()
+      : Date.now();
+    setElapsed(Math.floor((Date.now() - base) / 1000));
     const timerId = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - startTime) / 1000));
+      const effectiveBase = state.quizStartTime
+        ? state.quizStartTime.getTime()
+        : base;
+      setElapsed(Math.floor((Date.now() - effectiveBase) / 1000));
     }, 1000);
     return () => clearInterval(timerId);
-  }, [startTime]);
+  }, [state.quizStartTime]);
 
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
@@ -91,7 +168,7 @@ export default function Quiz() {
         // Return the API promise so callers can await completion when needed
         await answerApi.updateAnswer(attemptId, questionId, optionId);
       } catch (error) {
-        toast.error("Lỗi khi lưu câu trả lời", {
+        toast.error("Lỗi khi lưu câu trả l���i", {
           description:
             "Your progress might not be saved. Please check your connection.",
         });
@@ -107,7 +184,7 @@ export default function Quiz() {
     if (prevIndex !== currentQuestionIndex) {
       const previousQuestion = questions[prevIndex];
       const existingAnswer = answers.find(
-        (a) => a.questionId === previousQuestion?.id
+        (a) => a.questionId === String(previousQuestion?.id)
       );
 
       if (
@@ -115,13 +192,13 @@ export default function Quiz() {
         selectedOptionId &&
         selectedOptionId !== existingAnswer?.optionId
       ) {
-        submitAnswer(previousQuestion.id, selectedOptionId);
+        submitAnswer(String(previousQuestion.id), selectedOptionId);
       }
 
       const newCurrentQuestion = questions[currentQuestionIndex];
       if (newCurrentQuestion) {
         const answerForNewQuestion = answers.find(
-          (a) => a.questionId === newCurrentQuestion.id
+          (a) => a.questionId === String(newCurrentQuestion.id)
         );
         setSelectedOptionId(answerForNewQuestion?.optionId ?? null);
       }
@@ -136,6 +213,14 @@ export default function Quiz() {
     selectedOptionId,
   ]);
 
+  // Ensure selected option reflects loaded answers (initial load or when answers fetched)
+  const currentQuestionId = currentQuestion?.id;
+  useEffect(() => {
+    if (!currentQuestionId) return;
+    const a = answers.find((x) => x.questionId === String(currentQuestionId));
+    setSelectedOptionId(a?.optionId ?? null);
+  }, [answers, currentQuestionId]);
+
   const handleAnswerSelect = (optionId: string) => {
     setSelectedOptionId(optionId);
   };
@@ -147,9 +232,9 @@ export default function Quiz() {
   };
 
   const isAllQuestionsAnswered = useMemo(() => {
-    const answeredIds = new Set(answers.map((a) => a.questionId));
+    const answeredIds = new Set(answers.map((a) => String(a.questionId)));
     if (selectedOptionId && currentQuestion) {
-      answeredIds.add(currentQuestion.id);
+      answeredIds.add(String(currentQuestion.id));
     }
     return answeredIds.size === totalQuestions;
   }, [answers, selectedOptionId, currentQuestion, totalQuestions]);
@@ -164,10 +249,12 @@ export default function Quiz() {
       return;
     }
 
-    const lastAnswer = answers.find((a) => a.questionId === currentQuestion.id);
+    const lastAnswer = answers.find(
+      (a) => a.questionId === String(currentQuestion.id)
+    );
     if (selectedOptionId && selectedOptionId !== lastAnswer?.optionId) {
       // Ensure last answer is saved before final submit to avoid race conditions
-      await submitAnswer(currentQuestion.id, selectedOptionId);
+      await submitAnswer(String(currentQuestion.id), selectedOptionId);
     }
 
     if (!isAllQuestionsAnswered) {
@@ -193,6 +280,13 @@ export default function Quiz() {
       };
 
       dispatch({ type: "COMPLETE_QUIZ", payload: quizResult });
+
+      // Clear persisted session when submitted
+      sessionStorage.removeItem(STORAGE_KEYS.ATTEMPT_ID);
+      sessionStorage.removeItem(STORAGE_KEYS.ATTEMPT_STATUS);
+      sessionStorage.removeItem(STORAGE_KEYS.STUDENT_INFO);
+      sessionStorage.removeItem(STORAGE_KEYS.QUIZ_DATA);
+      sessionStorage.removeItem(STORAGE_KEYS.QUIZ_START);
 
       toast.success("Bài thi hoàn tất!", {
         description: "Đang chuyển bạn đến trang kết quả.",
@@ -385,7 +479,8 @@ export default function Quiz() {
                 <div className="grid lg:grid-cols-5 xl:grid-cols-6 md:grid-cols-15 gap-2 p-1 ">
                   {questions.map((question, index) => {
                     const isAnswered = answers.some(
-                      (answer) => answer.questionId === question.id
+                      (answer) =>
+                        String(answer.questionId) === String(question.id)
                     );
                     const isCurrent = currentQuestionIndex === index;
                     return (
@@ -510,7 +605,7 @@ export default function Quiz() {
                         }}
                         whileTap={{ scale: 0.98 }}
                         className={`flex items-center p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 relative overflow-hidden group ${
-                          selectedOptionId === option.id
+                          selectedOptionId === String(option.id)
                             ? "border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/20"
                             : "border-slate-600/50 hover:border-slate-500 bg-slate-700/20 hover:bg-slate-700/40"
                         }`}
@@ -518,20 +613,20 @@ export default function Quiz() {
                         <input
                           type="radio"
                           name={`answer-${currentQuestion.id}`}
-                          value={option.id}
-                          checked={selectedOptionId === option.id}
-                          onChange={() => handleAnswerSelect(option.id)}
+                          value={String(option.id)}
+                          checked={selectedOptionId === String(option.id)}
+                          onChange={() => handleAnswerSelect(String(option.id))}
                           className="sr-only"
                         />
 
                         <div
                           className={`w-5 h-5 rounded-full mr-4 border-2 flex items-center justify-center transition-all duration-300 ${
-                            selectedOptionId === option.id
+                            selectedOptionId === String(option.id)
                               ? "border-amber-500 bg-amber-500"
                               : "border-slate-400 group-hover:border-slate-300"
                           }`}
                         >
-                          {selectedOptionId === option.id && (
+                          {selectedOptionId === String(option.id) && (
                             <motion.div
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
@@ -542,7 +637,7 @@ export default function Quiz() {
                         <span className="text-slate-200 flex-1 group-hover:text-white transition-colors duration-300">
                           {option.content}
                         </span>
-                        {selectedOptionId === option.id && (
+                        {selectedOptionId === String(option.id) && (
                           <motion.div
                             initial={{ opacity: 0, scale: 0 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -590,7 +685,8 @@ export default function Quiz() {
               <div className="grid grid-cols-5 gap-2">
                 {questions.map((question, index) => {
                   const isAnswered = answers.some(
-                    (answer) => answer.questionId === question.id
+                    (answer) =>
+                      String(answer.questionId) === String(question.id)
                   );
                   const isCurrent = currentQuestionIndex === index;
                   return (

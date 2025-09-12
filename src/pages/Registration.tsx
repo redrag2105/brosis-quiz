@@ -52,6 +52,11 @@ export default function Registration() {
   const onSubmit = async (data: Omit<StudentRegistrationForm, "nha">) => {
     setIsProcessing(true);
     try {
+      // Clear any previous attempt/session when a new user registers
+      sessionStorage.removeItem("attemptId");
+      sessionStorage.removeItem("attemptStatus");
+      sessionStorage.removeItem("studentInfo");
+
       await registerApi.register({
         full_name: data.ten,
         student_id: data.mssv,
@@ -60,9 +65,12 @@ export default function Registration() {
         company_unit: data.daiDoi,
       });
 
+      const student = { ...data, nha: "phoenix" as House };
+      sessionStorage.setItem("studentInfo", JSON.stringify(student));
+
       dispatch({
         type: "SET_STUDENT_INFO",
-        payload: { ...data, nha: "phoenix" as House },
+        payload: student,
       });
       toast.success("Đăng kí thành công!");
       navigate(ROUTES.AVATAR);

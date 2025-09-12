@@ -6,7 +6,7 @@ import { useAppContext } from "../context/hooks";
 import { Button } from "../components/ui/button";
 import { Avatar } from "../components/avatar/Avatar";
 import type { AvatarConfig, House } from "../types";
-import { ROUTES } from "../constants";
+import { ROUTES, STORAGE_KEYS } from "../constants";
 import GradientText from "@/components/gradient-text";
 import { TextMorph } from "@/components/ui/text-morph";
 import { useForm } from "react-hook-form";
@@ -117,10 +117,19 @@ export default function AvatarBuilder() {
   };
 
   useEffect(() => {
-    if (!state.studentInfo) {
-      navigate(ROUTES.REGISTRATION);
+    if (state.studentInfo) return;
+    const raw = sessionStorage.getItem(STORAGE_KEYS.STUDENT_INFO);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        dispatch({ type: "SET_STUDENT_INFO", payload: parsed });
+        return;
+      } catch {
+        // fallthrough to navigate
+      }
     }
-  }, [state.studentInfo, navigate]);
+    navigate(ROUTES.REGISTRATION);
+  }, [state.studentInfo, navigate, dispatch]);
 
   const update = (patch: Partial<AvatarConfig>) => {
     dispatch({ type: "SET_AVATAR", payload: { ...config, ...patch } });
@@ -152,11 +161,45 @@ export default function AvatarBuilder() {
     try {
       await registerApi.updateInfo(updatePayload);
 
+      // Update persisted student info with chosen house and avatar
+      const storedRaw = sessionStorage.getItem("studentInfo");
+      const stored = storedRaw ? JSON.parse(storedRaw) : null;
+      const updatedStudent = stored
+        ? {
+            ...stored,
+            nha: state.studentInfo.nha,
+            avatar: {
+              accessory: state.avatar.accessory,
+              shirt: state.avatar.shirt,
+            },
+          }
+        : {
+            ten: state.studentInfo.ten,
+            mssv: state.studentInfo.mssv,
+            sdt: state.studentInfo.sdt,
+            lop: state.studentInfo.lop,
+            nha: state.studentInfo.nha,
+            daiDoi: state.studentInfo.daiDoi,
+            avatar: {
+              accessory: state.avatar.accessory,
+              shirt: state.avatar.shirt,
+            },
+          };
+      sessionStorage.setItem("studentInfo", JSON.stringify(updatedStudent));
+
       toast.info("Đăng kí thành công!", {
         description: "Đang chuẩn bị bài thi cho bạn...",
       });
 
       const attemptResponse = await attemptApi.getQuestions(attemptPayload);
+
+      // Persist attempt status and id for resume flow
+      sessionStorage.setItem("attemptId", attemptResponse.result.attemptId);
+      if (attemptResponse.result.status) {
+        sessionStorage.setItem("attemptStatus", attemptResponse.result.status);
+      } else {
+        sessionStorage.setItem("attemptStatus", "ACTIVE");
+      }
 
       toast.success("Tải bài thi thành công!", {
         description: "Chúc bạn may mắn!",
@@ -166,6 +209,12 @@ export default function AvatarBuilder() {
         type: "SET_QUIZ_DATA",
         payload: attemptResponse.result,
       });
+
+      // Persist quiz data for resume (questions + attemptId)
+      sessionStorage.setItem(
+        "quizData",
+        JSON.stringify(attemptResponse.result)
+      );
 
       navigate(ROUTES.QUIZ);
     } catch (err: unknown) {
@@ -462,7 +511,7 @@ export default function AvatarBuilder() {
             <Button
               className="relative bg-gradient-to-r cursor-pointer from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-xl"
               onClick={handleSubmitAll}
-              disabled={isProcessing} // Disable button while processing
+              disabled={isProcessing}
             >
               {isProcessing ? "Đang xử lý..." : "Bắt đầu làm bài"}
               <NotebookPen className="w-4 h-4 ml-2" />

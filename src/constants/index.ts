@@ -11,3 +11,11 @@ export const ROUTES = {
   LEADERBOARD: "/leaderboard",
   AVATAR: "/avatar",
 } as const;
+
+export const STORAGE_KEYS = {
+  ATTEMPT_ID: "attemptId",
+  ATTEMPT_STATUS: "attemptStatus",
+  STUDENT_INFO: "studentInfo",
+  QUIZ_DATA: "quizData",
+  QUIZ_START: "quizStart",
+} as const;

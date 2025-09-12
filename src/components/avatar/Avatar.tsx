@@ -28,11 +28,15 @@ export function Avatar({
   const [currentSkin, setCurrentSkin] = useState<string>(String(baseSkin));
 
   // shirt layer state
-  const [currentShirt, setCurrentShirt] = useState<string | undefined>(config.shirt);
+  const [currentShirt, setCurrentShirt] = useState<string | undefined>(
+    config.shirt
+  );
   const [prevShirt, setPrevShirt] = useState<string | null>(null);
   const [prevSkin, setPrevSkin] = useState<string | null>(null);
 
-  const [currentAcc, setCurrentAcc] = useState<string | undefined>(config.accessory);
+  const [currentAcc, setCurrentAcc] = useState<string | undefined>(
+    config.accessory
+  );
   const [prevAcc, setPrevAcc] = useState<string | null>(null);
 
   useEffect(() => {
