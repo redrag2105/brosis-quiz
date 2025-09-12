@@ -297,14 +297,13 @@ export default function Leaderboard() {
                 <Button
                   onClick={handleSearch}
                   disabled={isSearching}
-                  className="h-10 rounded-xl cursor-pointer inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                  className="h-10 rounded-full cursor-pointer inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
                 >
                   {isSearching ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Search className="w-4 h-4" />
                   )}
-                  Tìm
                 </Button>
               </div>
             </div>
