@@ -17,8 +17,12 @@ export default function Results() {
   };
 
   useEffect(() => {
-    if (!state.quizResult || !state.studentInfo) {
+    if (!state.quizResult) {
       navigate(ROUTES.HOME);
+      return;
+    }
+    if (!state.studentInfo) {
+      navigate(ROUTES.REGISTRATION);
       return;
     }
   }, [state.quizResult, state.studentInfo, navigate]);
