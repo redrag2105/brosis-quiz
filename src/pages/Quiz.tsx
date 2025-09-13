@@ -284,7 +284,6 @@ export default function Quiz() {
       // Clear persisted session when submitted
       sessionStorage.removeItem(STORAGE_KEYS.ATTEMPT_ID);
       sessionStorage.removeItem(STORAGE_KEYS.ATTEMPT_STATUS);
-      sessionStorage.removeItem(STORAGE_KEYS.STUDENT_INFO);
       sessionStorage.removeItem(STORAGE_KEYS.QUIZ_DATA);
       sessionStorage.removeItem(STORAGE_KEYS.QUIZ_START);
 

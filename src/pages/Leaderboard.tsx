@@ -157,6 +157,36 @@ export default function Leaderboard() {
   const getHouseInitial = (house: string) =>
     house ? house.charAt(0).toUpperCase() : "?";
 
+  const getHouseRing = (house: string) => {
+    switch (house) {
+      case "phoenix":
+        return "ring-2 ring-red-400 shadow-red-400/30";
+      case "unicorn":
+        return "ring-2 ring-purple-400 shadow-purple-400/30";
+      case "thunderbird":
+        return "ring-2 ring-yellow-400 shadow-yellow-400/30";
+      case "faerie":
+        return "ring-2 ring-green-400 shadow-green-400/30";
+      default:
+        return "ring-2 ring-slate-400 shadow-slate-400/30";
+    }
+  };
+
+  const getHousePodiumBg = (house: string) => {
+    switch (house) {
+      case "phoenix":
+        return "from-red-900/15 to-red-400/10";
+      case "unicorn":
+        return "from-purple-500/15 to-pink-500/10";
+      case "thunderbird":
+        return "from-yellow-500/15 to-orange-500/10";
+      case "faerie":
+        return "from-green-500/15 to-emerald-500/10";
+      default:
+        return "from-slate-500/15 to-slate-400/10";
+    }
+  };
+
   const [expandedPodium, setExpandedPodium] = useState<number | null>(null);
   const togglePodium = (rank: number) => {
     setExpandedPodium((prev) => (prev === rank ? null : rank));
@@ -278,9 +308,9 @@ export default function Leaderboard() {
           <div className="absolute inset-0 bg-gradient-to-br from-slate-700/20 via-[#7D2BB5]/5 to-slate-800/20 rounded-3xl"></div>
 
           <div className="relative z-10 p-3 md:p-8">
-            <h2 className="text-2xl font-bold text-white mb-4 flex items-center space-x-3">
+            <h2 className="text-2xl font-bold text-white mb-4 flex items-center justify-center gap-3 text-center">
               <Crown className="w-6 h-6 text-yellow-400" />
-              <span>Bảng Xếp Hạng (TOP 10)</span>
+              <span>Bảng Xếp Hạng</span>
             </h2>
 
             <div className="mb-4 gap-2 sm:items-center sm:justify-between">
@@ -350,7 +380,7 @@ export default function Leaderboard() {
                               <span className="text-amber-400 font-bold">
                                 {searchEntry.score}
                                 <span className="text-slate-400">
-                                  /{QUIZ_CONFIG.TOTAL_QUESTIONS}
+                                  /{QUIZ_CONFIG.TOTAL_SCORE}
                                 </span>
                               </span>
                               <span className="text-slate-400">
@@ -423,7 +453,7 @@ export default function Leaderboard() {
                             <div className="font-bold text-xl text-white">
                               {searchEntry.score}
                               <span className="text-slate-400 text-sm ml-1">
-                                /{QUIZ_CONFIG.TOTAL_QUESTIONS}
+                                /{QUIZ_CONFIG.TOTAL_SCORE}
                               </span>
                             </div>
                           </td>
@@ -474,16 +504,8 @@ export default function Leaderboard() {
                           const rank = entry.rank;
                           const isWinner = rank === 1;
                           const sizes = isWinner ? 64 : rank === 2 ? 52 : 48;
-                          const ring = isWinner
-                            ? "ring-2 ring-amber-400 shadow-amber-400/30"
-                            : rank === 2
-                            ? "ring-2 ring-slate-300 shadow-slate-300/20"
-                            : "ring-2 ring-purple-400 shadow-purple-400/20";
-                          const bg = isWinner
-                            ? "from-amber-500/15 to-orange-500/10"
-                            : rank === 2
-                            ? "from-slate-500/15 to-slate-400/10"
-                            : "from-purple-500/15 to-pink-500/10";
+                          const ring = getHouseRing(entry.student.house);
+                          const bg = getHousePodiumBg(entry.student.house);
 
                           return (
                             <motion.div
@@ -555,7 +577,7 @@ export default function Leaderboard() {
                                     <span className="text-amber-400 font-bold">
                                       {entry.score}
                                       <span className="text-slate-400">
-                                        /{QUIZ_CONFIG.TOTAL_QUESTIONS}
+                                        /{QUIZ_CONFIG.TOTAL_SCORE}
                                       </span>
                                     </span>
                                     <span className="text-slate-300">
@@ -583,6 +605,99 @@ export default function Leaderboard() {
                                   </div>
                                 </div>
                               )}
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Desktop Top 3 Podium */}
+                {(() => {
+                  const topThree = leaderboard.slice(0, 3);
+                  if (!topThree.length) return null;
+                  const ordered =
+                    topThree.length === 3
+                      ? [topThree[1], topThree[0], topThree[2]]
+                      : topThree;
+                  return (
+                    <div className="hidden md:block mb-10 pb-20">
+                      <div className="grid grid-cols-3 gap-4 items-end max-w-4xl mx-auto">
+                        {ordered.map((entry, colIdx) => {
+                          const rank = entry.rank;
+                          const isWinner = rank === 1;
+                          const size = isWinner ? 96 : rank === 2 ? 80 : 72;
+                          const ring = getHouseRing(entry.student.house);
+                          const bg = getHousePodiumBg(entry.student.house);
+                          return (
+                            <motion.div
+                              key={`${entry.student_id}-desk-${rank}`}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.1 * colIdx }}
+                              className={`relative mt-15 rounded-2xl p-4 text-center bg-gradient-to-b ${bg} border border-slate-700/60 shadow-2xl flex flex-col items-center`}
+                            >
+                              {isWinner && (
+                                <motion.div
+                                  initial={{ y: -12, opacity: 0 }}
+                                  animate={{ y: 0, opacity: 1 }}
+                                  transition={{ delay: 0.15 }}
+                                  className="absolute -top-7 left-1/2 -translate-x-1/2"
+                                >
+                                  <div className="relative">
+                                    <Crown className="w-10 h-10 text-yellow-400" />
+                                    <div className="absolute inset-0 rounded-full blur-md bg-yellow-400/40 opacity-60 animate-pulse" />
+                                  </div>
+                                </motion.div>
+                              )}
+                              <div className="absolute top-2 right-2">
+                                <div
+                                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${getHouseColor(
+                                    entry.student.house
+                                  )} border`}
+                                >
+                                  {getHouseInitial(entry.student.house)}
+                                </div>
+                              </div>
+
+                              <div className="relative">
+                                <Avatar
+                                  baseSkin={entry.student.house}
+                                  config={{
+                                    accessory: entry.student.accessory,
+                                    shirt: entry.student.shirt,
+                                  }}
+                                  size={size}
+                                  className={`rounded-full border border-slate-600 shadow-lg ${ring}`}
+                                />
+                                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+                                  <div className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-slate-900 bg-white/80">
+                                    #{rank}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="mt-3 text-white font-semibold text-base max-w-[14rem] truncate">
+                                {entry.student.full_name}
+                              </div>
+                              <span
+                                className={`mt-1 px-3 py-1 rounded-full text-xs font-medium font-mono ${getRankGradient(
+                                  rank
+                                )}`}
+                              >
+                                {entry.student_id}
+                              </span>
+                              <div className="mt-2 flex items-center justify-center gap-3 text-sm">
+                                <span className="text-amber-400 font-bold">
+                                  {entry.score}
+                                  <span className="text-slate-400">
+                                    /{QUIZ_CONFIG.TOTAL_SCORE}
+                                  </span>
+                                </span>
+                                <span className="text-slate-300">
+                                  {formatDuration(entry.timeSpent)}
+                                </span>
+                              </div>
                             </motion.div>
                           );
                         })}
@@ -631,7 +746,7 @@ export default function Leaderboard() {
                             <span className="text-amber-400 font-bold">
                               {entry.score}
                               <span className="text-slate-400">
-                                /{QUIZ_CONFIG.TOTAL_QUESTIONS}
+                                /{QUIZ_CONFIG.TOTAL_SCORE}
                               </span>
                             </span>
                             <span className="text-slate-400">
@@ -674,7 +789,7 @@ export default function Leaderboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {leaderboard.slice(0, 10).map((entry, index) => (
+                      {leaderboard.slice(3, 10).map((entry, index) => (
                         <motion.tr
                           id={`row-${entry.student_id}-${index}`}
                           key={`${entry.student_id}-${index}`}
@@ -720,8 +835,8 @@ export default function Leaderboard() {
                           <td className="py-5 px-3 text-center">
                             <div className="font-bold text-xl text-white">
                               {entry.score}
-                              <span className="text-slate-400 text-sm ml-1">
-                                /{QUIZ_CONFIG.TOTAL_QUESTIONS}
+                              <span className="text-slate-400 text-sm ml-0.5">
+                                /{QUIZ_CONFIG.TOTAL_SCORE}
                               </span>
                             </div>
                           </td>

@@ -1,14 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  GraduationCap,
-  Trophy,
-  Users,
-  BookOpen,
-  Star,
-  Sparkles,
-  Zap,
-} from "lucide-react";
+import { Trophy, Users, BookOpen, Star, Sparkles, Zap } from "lucide-react";
 import { ROUTES } from "../constants";
 
 export default function Home() {
@@ -117,7 +109,7 @@ export default function Home() {
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-3xl shadow-2xl p-8 max-w-lg w-full text-center relative overflow-hidden"
+          className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-3xl shadow-2xl p-8 pt-4 max-w-lg w-full text-center relative overflow-hidden"
         >
           {/* Card background glow */}
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-yellow-500/5 rounded-3xl"></div>
@@ -131,17 +123,18 @@ export default function Home() {
           >
             <motion.div
               animate={{
-                rotate: [0, 360],
-                scale: [1, 1.05, 1],
+                scale: [1, 1.02, 1],
               }}
               transition={{
-                rotate: { duration: 20, repeat: Infinity, ease: "linear" },
                 scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
               }}
-              className="w-20 h-20 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6 relative"
+              className="w-45 h-45 flex items-center justify-center mx-auto mb-2 relative"
             >
-              <GraduationCap className="w-10 h-10 text-white" />
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-yellow-500 rounded-full blur-lg opacity-50 animate-pulse"></div>
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="w-42 h-42 object-contain"
+              />
             </motion.div>
 
             <motion.h1

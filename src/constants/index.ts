@@ -1,5 +1,5 @@
 export const QUIZ_CONFIG = {
-  TOTAL_QUESTIONS: 20,
+  TOTAL_SCORE: 10,
 } as const;
 
 export const ROUTES = {
@@ -10,6 +10,7 @@ export const ROUTES = {
   RESULTS: "/results",
   LEADERBOARD: "/leaderboard",
   AVATAR: "/avatar",
+  FEEDBACK: "/feedback",
 } as const;
 
 export const STORAGE_KEYS = {

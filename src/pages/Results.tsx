@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Trophy, Sparkles, Star, Award } from "lucide-react";
@@ -9,21 +9,11 @@ import { Button } from "../components/ui/button";
 export default function Results() {
   const navigate = useNavigate();
   const { state } = useAppContext();
-  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     if (!state.quizResult || !state.studentInfo) {
       navigate(ROUTES.HOME);
       return;
-    }
-
-    // Show confetti for high percentage
-    const correct = Number(state.quizResult.correct_count ?? 0);
-    const total = Number(state.quizResult.total_count ?? 1);
-    const percentage = Math.round((correct / Math.max(total, 1)) * 100);
-    if (percentage >= 80) {
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 4000);
     }
   }, [state.quizResult, state.studentInfo, navigate]);
 
@@ -141,40 +131,6 @@ export default function Results() {
           </motion.div>
         ))}
       </div>
-
-      {/* Confetti animation */}
-      {showConfetti && (
-        <div className="fixed inset-0 pointer-events-none z-50">
-          {[...Array(60)].map((_, i) => (
-            <motion.div
-              key={i}
-              className={`absolute w-3 h-3 rounded-full ${
-                [
-                  "bg-cyan-400",
-                  "bg-purple-400",
-                  "bg-yellow-400",
-                  "bg-pink-400",
-                ][i % 4]
-              }`}
-              initial={{
-                x: Math.random() * window.innerWidth,
-                y: -20,
-                rotate: 0,
-                scale: Math.random() * 0.5 + 0.5,
-              }}
-              animate={{
-                y: window.innerHeight + 20,
-                rotate: 360 * (Math.random() > 0.5 ? 1 : -1),
-                x: Math.random() * window.innerWidth,
-              }}
-              transition={{
-                duration: Math.random() * 3 + 2,
-                ease: "easeOut",
-              }}
-            />
-          ))}
-        </div>
-      )}
 
       {/* Main content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
@@ -350,7 +306,7 @@ export default function Results() {
             className="relative z-10 flex justify-center"
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-              <Link to={ROUTES.REGISTRATION}>
+              <Link to={ROUTES.FEEDBACK}>
                 <Button className="group px-8 py-4 rounded-xl cursor-pointer bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white relative overflow-hidden">
                   <span className="relative z-10">Đã hiểu</span>
                   <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
