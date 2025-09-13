@@ -44,7 +44,7 @@ export const answerApi = {
    * @param attemptId - The ID of the quiz attempt to be submitted.
    */
 
-  submitApi: async (attemptId: string) => {
+  submitApi: async (attemptId?: string) => {
     const response = await axiosInstance.post<SubmitAttemptResponse>(
       `/attempt/${attemptId}/submit`
     );

@@ -81,7 +81,16 @@ const BackgroundDecor = memo(function BackgroundDecor({
         ))}
       </div>
       {active && (
-        <div style={{ width: "100%", height: 1000, position: "absolute" }}>
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+          }}
+        >
           <LiquidEther
             colors={["#713f12", "#f97316", "#fbbf24"]}
             mouseForce={20}

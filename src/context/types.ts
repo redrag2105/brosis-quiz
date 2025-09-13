@@ -17,7 +17,7 @@ export interface AppState {
 
 // Action types
 export type AppAction =
-  | { type: "SET_STUDENT_INFO"; payload: StudentInfo }
+  | { type: "SET_STUDENT_INFO"; payload: StudentInfo | null }
   | { type: "SET_AVATAR"; payload: AvatarConfig }
   | { type: "START_QUIZ"; payload: { startTime: Date } }
   | { type: "SET_QUIZ_DATA"; payload: QuizData }

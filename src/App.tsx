@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { useEffect } from "react";
 import { useAppContext } from "./context/hooks";
@@ -19,9 +24,12 @@ function TitleManager() {
 
   useEffect(() => {
     const base = "DigiSurvive";
-    const sid = state.quizResult?.student_id || state.studentInfo?.mssv || "";
+    const sid = state.studentInfo?.mssv || "";
     document.title = sid ? `${base} | ${sid}` : base;
-  }, [state.quizResult?.student_id, state.studentInfo?.mssv, location.pathname]);
+    return () => {
+      document.title = base;
+    };
+  }, [state.studentInfo, location.pathname]);
 
   return null;
 }

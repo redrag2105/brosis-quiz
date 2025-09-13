@@ -32,6 +32,8 @@ export default function Quiz() {
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const isSubmittingRef = useRef(false);
+
   const { quizData, studentInfo, currentQuestionIndex, answers } = state;
 
   const questions = useMemo(() => quizData?.questions ?? [], [quizData]);
@@ -56,7 +58,6 @@ export default function Quiz() {
 
   const prevQuestionIndexRef = useRef(currentQuestionIndex);
 
-  // Resume flow: try loading from session storage when direct visiting /quiz or after reload
   useEffect(() => {
     const ensureState = async () => {
       try {
@@ -138,18 +139,24 @@ export default function Quiz() {
   ]);
 
   useEffect(() => {
+    if (isSubmitting) {
+      return;
+    }
+
     const base = state.quizStartTime
       ? state.quizStartTime.getTime()
       : Date.now();
     setElapsed(Math.floor((Date.now() - base) / 1000));
+
     const timerId = setInterval(() => {
       const effectiveBase = state.quizStartTime
         ? state.quizStartTime.getTime()
         : base;
       setElapsed(Math.floor((Date.now() - effectiveBase) / 1000));
     }, 1000);
+
     return () => clearInterval(timerId);
-  }, [state.quizStartTime]);
+  }, [state.quizStartTime, isSubmitting]);
 
   const currentQuestion = questions[currentQuestionIndex];
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
@@ -157,20 +164,15 @@ export default function Quiz() {
   const submitAnswer = useCallback(
     async (questionId: string, optionId: string) => {
       if (!attemptId) return;
-
-      // Update local state first so UI reflects the choice immediately
       dispatch({
         type: "SET_ANSWER",
         payload: { questionId, optionId },
       });
-
       try {
-        // Return the API promise so callers can await completion when needed
         await answerApi.updateAnswer(attemptId, questionId, optionId);
       } catch (error) {
-        toast.error("Lỗi khi lưu câu trả l���i", {
-          description:
-            "Your progress might not be saved. Please check your connection.",
+        toast.error("Lỗi khi lưu câu trả lời", {
+          description: "Vui lòng kiểm tra kết nối và thử lại.",
         });
         console.error("Failed to save answer:", error);
       }
@@ -180,13 +182,11 @@ export default function Quiz() {
 
   useEffect(() => {
     const prevIndex = prevQuestionIndexRef.current;
-
     if (prevIndex !== currentQuestionIndex) {
       const previousQuestion = questions[prevIndex];
       const existingAnswer = answers.find(
         (a) => a.questionId === String(previousQuestion?.id)
       );
-
       if (
         previousQuestion &&
         selectedOptionId &&
@@ -194,7 +194,6 @@ export default function Quiz() {
       ) {
         submitAnswer(String(previousQuestion.id), selectedOptionId);
       }
-
       const newCurrentQuestion = questions[currentQuestionIndex];
       if (newCurrentQuestion) {
         const answerForNewQuestion = answers.find(
@@ -202,7 +201,6 @@ export default function Quiz() {
         );
         setSelectedOptionId(answerForNewQuestion?.optionId ?? null);
       }
-
       prevQuestionIndexRef.current = currentQuestionIndex;
     }
   }, [
@@ -213,7 +211,6 @@ export default function Quiz() {
     selectedOptionId,
   ]);
 
-  // Ensure selected option reflects loaded answers (initial load or when answers fetched)
   const currentQuestionId = currentQuestion?.id;
   useEffect(() => {
     if (!currentQuestionId) return;
@@ -240,32 +237,37 @@ export default function Quiz() {
   }, [answers, selectedOptionId, currentQuestion, totalQuestions]);
 
   const handleNextOrFinish = async () => {
+    // ====== NEXT ======
     if (!isLastQuestion) {
       dispatch({ type: "NEXT_QUESTION" });
       return;
     }
 
-    if (!attemptId || isSubmitting) {
-      return;
-    }
-
-    const lastAnswer = answers.find(
-      (a) => a.questionId === String(currentQuestion.id)
-    );
-    if (selectedOptionId && selectedOptionId !== lastAnswer?.optionId) {
-      // Ensure last answer is saved before final submit to avoid race conditions
-      await submitAnswer(String(currentQuestion.id), selectedOptionId);
-    }
-
+    // ====== FINISH ======
+    // Make sure all questions are answered before proceeding.
     if (!isAllQuestionsAnswered) {
       toast.error("Bạn phải hoàn thành tất cả câu hỏi trước khi kết thúc.");
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const res = await answerApi.submitApi(attemptId);
+    // Lock check: Use the ref for an immediate, synchronous check.
+    // If this is true, a submission is already in progress.
+    if (isSubmittingRef.current) {
+      return;
+    }
 
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+
+    try {
+      const lastAnswer = answers.find(
+        (a) => a.questionId === String(currentQuestion.id)
+      );
+      if (selectedOptionId && selectedOptionId !== lastAnswer?.optionId) {
+        await submitAnswer(String(currentQuestion.id), selectedOptionId);
+      }
+
+      const res = await answerApi.submitApi(attemptId);
       const serverResult = res.result;
 
       const quizResult = {
@@ -281,7 +283,6 @@ export default function Quiz() {
 
       dispatch({ type: "COMPLETE_QUIZ", payload: quizResult });
 
-      // Clear persisted session when submitted
       sessionStorage.removeItem(STORAGE_KEYS.ATTEMPT_ID);
       sessionStorage.removeItem(STORAGE_KEYS.ATTEMPT_STATUS);
       sessionStorage.removeItem(STORAGE_KEYS.QUIZ_DATA);
@@ -291,13 +292,18 @@ export default function Quiz() {
       toast.success("Bài thi hoàn tất!", {
         description: "Đang chuyển bạn đến trang kết quả.",
       });
+
+      // Navigate away. Once this happens, the component unmounts,
+      // and we don't need to reset the loading state.
       navigate(ROUTES.RESULTS);
     } catch (error) {
       toast.error("Không thể nộp bài thi", {
         description: "Vui lòng kiểm tra kết nối và thử lại.",
       });
       console.error("Submit attempt failed:", error);
-    } finally {
+
+      // If the submission fails, reset the state so the user can try again.
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
   };
@@ -312,7 +318,9 @@ export default function Quiz() {
   }
 
   const progress =
-    totalQuestions > 0 ? (answers.length / totalQuestions) * 100 : 0;
+    totalQuestions > 0
+      ? (answers.filter((a) => a.optionId).length / totalQuestions) * 100
+      : 0;
   const isFinishButtonDisabled = isLastQuestion && !isAllQuestionsAnswered;
 
   const floatingElements = [...Array(6)].map((_, i) => ({

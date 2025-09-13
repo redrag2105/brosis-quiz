@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Trophy, Sparkles, Star, Award } from "lucide-react";
 import { useAppContext } from "../context/hooks";
@@ -8,7 +8,13 @@ import { Button } from "../components/ui/button";
 
 export default function Results() {
   const navigate = useNavigate();
+  const { dispatch } = useAppContext();
   const { state } = useAppContext();
+
+  const handleFinish = () => {
+    dispatch({ type: "SET_STUDENT_INFO", payload: null });
+    navigate(ROUTES.REGISTRATION);
+  };
 
   useEffect(() => {
     if (!state.quizResult || !state.studentInfo) {
@@ -296,12 +302,13 @@ export default function Results() {
             className="relative z-10 flex justify-center"
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-              <Link to={ROUTES.REGISTRATION}>
-                <Button className="group px-8 py-4 rounded-xl cursor-pointer bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white relative overflow-hidden">
-                  <span className="relative z-10">Đã hiểu</span>
-                  <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                </Button>
-              </Link>
+              <Button
+                onClick={handleFinish}
+                className="group px-8 py-4 rounded-xl cursor-pointer bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white relative overflow-hidden"
+              >
+                <span className="relative z-10">Đã hiểu</span>
+                <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+              </Button>
             </motion.div>
           </motion.div>
         </motion.div>
