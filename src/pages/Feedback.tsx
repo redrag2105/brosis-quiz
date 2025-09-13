@@ -7,6 +7,7 @@ import { ROUTES, STORAGE_KEYS } from "../constants";
 import { Button } from "../components/ui/button";
 import { toast } from "sonner";
 import { registerApi } from "@/apis/register/registerApi";
+import { attemptApi } from "@/apis/register/attemptApi";
 import LiquidEther from "@/components/LiquidEther";
 import { isAxiosError } from "axios";
 
@@ -147,12 +148,33 @@ export default function Feedback() {
         rating,
         comment,
       });
-      toast.success("Cảm ơn phản hồi của bạn!", {
-        description:
-          "Chúng mình trân trọng mọi góp ý để cải thiện trải nghiệm.",
+
+      toast.success("Cảm ơn đánh giá của bạn!", {
+        description: "Đang chuẩn bị bài thi cho bạn...",
       });
-      sessionStorage.removeItem(STORAGE_KEYS.STUDENT_INFO);
-      navigate(ROUTES.REGISTRATION);
+
+      const attemptResponse = await attemptApi.getQuestions({
+        student_id: state.studentInfo.mssv,
+      });
+
+      sessionStorage.setItem("attemptId", attemptResponse.result.attemptId);
+      if (attemptResponse.result.status) {
+        sessionStorage.setItem("attemptStatus", attemptResponse.result.status);
+      } else {
+        sessionStorage.setItem("attemptStatus", "ACTIVE");
+      }
+
+      dispatch({
+        type: "SET_QUIZ_DATA",
+        payload: attemptResponse.result,
+      });
+
+      sessionStorage.setItem(
+        STORAGE_KEYS.QUIZ_DATA,
+        JSON.stringify(attemptResponse.result)
+      );
+
+      navigate(ROUTES.QUIZ);
     } catch (error) {
       // Check if the error is an Axios error with a response from the backend
       if (isAxiosError(error) && error.response) {
@@ -164,14 +186,14 @@ export default function Feedback() {
           });
         } else {
           // No 'errors' field, use the main message
-          toast.error("Gửi phản hồi thất bại", {
+          toast.error("Gửi đánh giá thất bại", {
             description:
               responseData.message || "Đã xảy ra lỗi không xác định.",
           });
         }
       } else {
         // Handle other types of errors (e.g., network error)
-        toast.error("Gửi phản hồi thất bại", {
+        toast.error("Gửi đánh giá thất bại", {
           description: "Vui lòng kiểm tra kết nối và thử lại.",
         });
         console.error(error);
@@ -414,7 +436,7 @@ export default function Feedback() {
 
                       <span className="relative z-10 flex items-center justify-center space-x-3">
                         <span className="text-lg tracking-wide">
-                          {submitting ? "Đang gửi..." : "Gửi phản hồi"}
+                          {submitting ? "Đang gửi..." : "Gửi đánh giá"}
                         </span>
                         <motion.div
                           animate={{

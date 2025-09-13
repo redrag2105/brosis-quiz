@@ -286,6 +286,7 @@ export default function Quiz() {
       sessionStorage.removeItem(STORAGE_KEYS.ATTEMPT_STATUS);
       sessionStorage.removeItem(STORAGE_KEYS.QUIZ_DATA);
       sessionStorage.removeItem(STORAGE_KEYS.QUIZ_START);
+      sessionStorage.removeItem(STORAGE_KEYS.STUDENT_INFO);
 
       toast.success("Bài thi hoàn tất!", {
         description: "Đang chuyển bạn đến trang kết quả.",

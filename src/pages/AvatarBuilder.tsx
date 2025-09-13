@@ -12,7 +12,6 @@ import { TextMorph } from "@/components/ui/text-morph";
 import { useForm } from "react-hook-form";
 import { registerApi } from "@/apis/register/registerApi";
 import { toast } from "sonner";
-import { attemptApi } from "@/apis/register/attemptApi";
 
 const HOUSES: { key: House; label: string; img: string }[] = [
   { key: "faerie", label: "Faerie", img: "/characters/Skin/faerie.svg" },
@@ -154,10 +153,6 @@ export default function AvatarBuilder() {
       shirt: state.avatar.shirt,
     };
 
-    const attemptPayload = {
-      student_id: state.studentInfo.mssv,
-    };
-
     try {
       await registerApi.updateInfo(updatePayload);
 
@@ -187,36 +182,11 @@ export default function AvatarBuilder() {
           };
       sessionStorage.setItem("studentInfo", JSON.stringify(updatedStudent));
 
-      toast.info("Đăng kí thành công!", {
-        description: "Đang chuẩn bị bài thi cho bạn...",
+      toast.success("Lưu avatar thành công!", {
+        description: "Hãy gửi đánh giá trước khi bắt đầu làm bài.",
       });
 
-      const attemptResponse = await attemptApi.getQuestions(attemptPayload);
-
-      // Persist attempt status and id for resume flow
-      sessionStorage.setItem("attemptId", attemptResponse.result.attemptId);
-      if (attemptResponse.result.status) {
-        sessionStorage.setItem("attemptStatus", attemptResponse.result.status);
-      } else {
-        sessionStorage.setItem("attemptStatus", "ACTIVE");
-      }
-
-      toast.success("Tải bài thi thành công!", {
-        description: "Chúc bạn may mắn!",
-      });
-
-      dispatch({
-        type: "SET_QUIZ_DATA",
-        payload: attemptResponse.result,
-      });
-
-      // Persist quiz data for resume (questions + attemptId)
-      sessionStorage.setItem(
-        "quizData",
-        JSON.stringify(attemptResponse.result)
-      );
-
-      navigate(ROUTES.QUIZ);
+      navigate(ROUTES.FEEDBACK);
     } catch (err: unknown) {
       const error = err as ApiError;
       const message = error.response?.data?.message;
@@ -513,7 +483,7 @@ export default function AvatarBuilder() {
               onClick={handleSubmitAll}
               disabled={isProcessing}
             >
-              {isProcessing ? "Đang xử lý..." : "Bắt đầu làm bài"}
+              {isProcessing ? "Đang xử lý..." : "Tiếp tục"}
               <NotebookPen className="w-4 h-4 ml-2" />
             </Button>
           </motion.div>

@@ -214,7 +214,7 @@ export default function Registration() {
                   <span className="text-amber-400">
                     <User className="w-4 h-4" />
                   </span>
-                  <span>Họ và tên *</span>
+                  <span>Họ và tên</span>
                 </Label>
                 <div className="relative">
                   <Input
@@ -245,7 +245,7 @@ export default function Registration() {
                   <span className="text-amber-400">
                     <School className="w-4 h-4" />
                   </span>
-                  <span>Mã số sinh viên *</span>
+                  <span>Mã số sinh viên</span>
                 </Label>
                 <div className="relative">
                   <Input
@@ -282,7 +282,7 @@ export default function Registration() {
                 <span className="text-amber-400">
                   <Phone className="w-4 h-4" />
                 </span>
-                <span>Số điện thoại *</span>
+                <span>Số điện thoại</span>
               </Label>
               <div className="relative">
                 <Input
@@ -319,7 +319,7 @@ export default function Registration() {
                   <span className="text-amber-400">
                     <Users className="w-4 h-4" />
                   </span>
-                  <span>Lớp *</span>
+                  <span>Lớp</span>
                 </Label>
                 <div className="relative">
                   <Input
@@ -350,7 +350,7 @@ export default function Registration() {
                   <span className="text-amber-400">
                     <Home className="w-4 h-4" />
                   </span>
-                  <span>Đại đội *</span>
+                  <span>Đại đội</span>
                 </Label>
                 <div className="relative">
                   <Input
