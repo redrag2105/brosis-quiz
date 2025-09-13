@@ -152,7 +152,7 @@ export default function Feedback() {
           "Chúng mình trân trọng mọi góp ý để cải thiện trải nghiệm.",
       });
       sessionStorage.removeItem(STORAGE_KEYS.STUDENT_INFO);
-      navigate(ROUTES.HOME);
+      navigate(ROUTES.REGISTRATION);
     } catch (error) {
       // Check if the error is an Axios error with a response from the backend
       if (isAxiosError(error) && error.response) {

@@ -132,6 +132,7 @@ export default function Home() {
             >
               <img
                 src="/logo.png"
+                fetchPriority="high"
                 alt="Logo"
                 className="w-42 h-42 object-contain"
               />
@@ -179,7 +180,7 @@ export default function Home() {
                   y: -5,
                   transition: { duration: 0.2 },
                 }}
-                className={`bg-gradient-to-br ${feature.color} border border-slate-600/50 rounded-xl p-4 text-center backdrop-blur-sm hover:border-slate-500/70 transition-all duration-300`}
+                className={`bg-gradient-to-br ${feature.color} border border-slate-600/50 rounded-xl md:p-2 p-1.5 text-center backdrop-blur-sm hover:border-slate-500/70 transition-all duration-300`}
               >
                 <motion.div
                   transition={{ duration: 0.5 }}
@@ -203,7 +204,6 @@ export default function Home() {
             className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/30 rounded-xl p-4 mb-6 backdrop-blur-sm"
           >
             <p className="text-cyan-100 text-sm">
-              <span className="text-2xl mr-2">🧠</span>
               <strong>Sinh tồn thời đại số:</strong> Hành trình rèn luyện kỹ
               năng thiết yếu để thích nghi và vững vàng trong mọi tình huống
             </p>
@@ -225,7 +225,7 @@ export default function Home() {
                   boxShadow: "0 10px 30px rgba(6, 182, 212, 0.3)",
                 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full cursor-pointer mb-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 relative overflow-hidden group"
+                className="w-full cursor-pointer -mb-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 relative overflow-hidden group"
               >
                 <span className="relative z-10 flex items-center justify-center space-x-2">
                   <span>🏆</span>

@@ -144,34 +144,24 @@ export default function Results() {
           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-yellow-500/5 rounded-3xl pointer-events-none"></div>
 
           {/* Header */}
-          <div className="text-left mb-8 relative z-10">
+          <div className="text-center mb-8 relative z-10">
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
               className="relative mx-auto mb-6"
             >
-              <div className="w-24 h-24 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 rounded-full flex items-center justify-center relative">
-                <Trophy className="w-12 h-12 text-white" />
+              <div className="w-16 h-16 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 rounded-full flex items-center justify-center relative">
+                <Trophy className="w-9 h-9 text-white" />
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 rounded-full blur-xl opacity-60 animate-pulse"></div>
               </div>
-              {percentage >= 80 && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.8, type: "spring" }}
-                  className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center"
-                >
-                  <span className="text-sm">��</span>
-                </motion.div>
-              )}
             </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
-              className="text-3xl font-semibold text-slate-100 mb-2"
+              className="text-3xl md:text-4xl -mt-16 font-extrabold mb-2 text-gradient-cyber"
             >
               Kết quả bài thi
             </motion.h1>
@@ -180,13 +170,13 @@ export default function Results() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
-              className="text-slate-300 text-sm"
+              className="text-slate-300 text-sm md:text-base max-w-xl mx-auto"
             >
               Tổng quan kết quả và thông tin bài thi của bạn
             </motion.p>
           </div>
 
-          {/* Score Display - redesigned */}
+          {/* Score Display */}
           <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
