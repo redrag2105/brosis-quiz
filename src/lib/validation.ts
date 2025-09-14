@@ -30,7 +30,7 @@ export const studentRegistrationSchema = z.object({
   lop: z
     .string()
     .min(1, "Lớp không được để trống")
-    .regex(/^[1-10]$/, "Lớp không hợp lệ"),
+    .regex(/^(10|[1-9])$/, "Lớp không hợp lệ"),
 
   daiDoi: z
     .string()
