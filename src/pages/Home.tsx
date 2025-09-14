@@ -131,7 +131,7 @@ export default function Home() {
               className="w-45 h-45 flex items-center justify-center mx-auto mb-2 relative"
             >
               <img
-                src="/logo.png"
+                src="/logo1.webp"
                 fetchPriority="high"
                 alt="Logo"
                 className="w-42 h-42 object-contain"
