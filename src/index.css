@@ -70,7 +70,7 @@
 
 /* Global styles */
 * {
-  font-family: "Inter", "Clock";
+  font-family: "Inter", sans-serif;
   scroll-behavior: smooth;
 }
 
