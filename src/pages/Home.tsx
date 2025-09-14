@@ -188,9 +188,9 @@ export default function Home() {
                 >
                   {feature.icon}
                 </motion.div>
-                <h3 className="font-semibold text-white text-sm mb-1">
+                <h1 className="font-semibold text-white text-sm mb-1">
                   {feature.title}
-                </h3>
+                </h1>
                 <p className="text-slate-400 text-xs">{feature.description}</p>
               </motion.div>
             ))}
