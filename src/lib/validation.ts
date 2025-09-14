@@ -30,12 +30,12 @@ export const studentRegistrationSchema = z.object({
   lop: z
     .string()
     .min(1, "Lớp không được để trống")
-    .regex(/^[1-6]$/, "Lớp không hợp lệ"),
+    .regex(/^[1-10]$/, "Lớp không hợp lệ"),
 
   daiDoi: z
     .string()
     .min(1, "Đại đội không được để trống")
-    .regex(/^[1-6]$/, "Đại đội không hợp lệ"),
+    .regex(/^[1-4]$/, "Đại đội không hợp lệ"),
 
   nha: z
     .string()
