@@ -328,6 +328,7 @@ export default function Leaderboard() {
                   onClick={handleSearch}
                   disabled={isSearching}
                   className="h-10 rounded-full cursor-pointer inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                  aria-label="Search"
                 >
                   {isSearching ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
