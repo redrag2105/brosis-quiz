@@ -8,7 +8,6 @@ import { Button } from "../components/ui/button";
 import { toast } from "sonner";
 import { registerApi } from "@/apis/register/registerApi";
 import { attemptApi } from "@/apis/register/attemptApi";
-import LiquidEther from "@/components/LiquidEther";
 import { isAxiosError } from "axios";
 
 interface FeedbackResponse {
@@ -81,34 +80,7 @@ const BackgroundDecor = memo(function BackgroundDecor({
         ))}
       </div>
       {active && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            pointerEvents: "none",
-          }}
-        >
-          <LiquidEther
-            colors={["#713f12", "#f97316", "#fbbf24"]}
-            mouseForce={20}
-            cursorSize={100}
-            isViscous={true}
-            viscous={30}
-            iterationsViscous={32}
-            iterationsPoisson={32}
-            resolution={0.5}
-            isBounce={false}
-            autoDemo={false}
-            autoSpeed={0.5}
-            autoIntensity={2.2}
-            takeoverDuration={0.25}
-            autoResumeDelay={3000}
-            autoRampDuration={0.6}
-          />
-        </div>
+        <div className="absolute inset-0 pointer-events-none" />
       )}
     </>
   );
