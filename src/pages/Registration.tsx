@@ -58,11 +58,11 @@ export default function Registration() {
       sessionStorage.removeItem("studentInfo");
 
       await registerApi.register({
-        full_name: data.ten,
-        student_id: data.mssv,
-        phone_number: data.sdt,
-        class_code: data.lop,
-        company_unit: data.daiDoi,
+        full_name: data.ten.trim(),
+        student_id: data.mssv.trim(),
+        phone_number: data.sdt.trim(),
+        class_code: data.lop.trim(),
+        company_unit: data.daiDoi.trim(),
       });
 
       const student = { ...data, nha: "phoenix" as House };

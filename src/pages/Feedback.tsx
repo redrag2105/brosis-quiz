@@ -79,9 +79,7 @@ const BackgroundDecor = memo(function BackgroundDecor({
           />
         ))}
       </div>
-      {active && (
-        <div className="absolute inset-0 pointer-events-none" />
-      )}
+      {active && <div className="absolute inset-0 pointer-events-none" />}
     </>
   );
 });
@@ -123,6 +121,10 @@ export default function Feedback() {
 
   const handleSubmit = async () => {
     if (!state.studentInfo) return;
+    if (!comment.trim()) {
+      toast.error("Vui lòng nhập nhận xét trước khi gửi.");
+      return;
+    }
     setSubmitting(true);
     try {
       await registerApi.feedback(state.studentInfo.mssv, {

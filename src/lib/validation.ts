@@ -6,18 +6,21 @@ const HOUSE_VALUES: House[] = ["faerie", "phoenix", "thunderbird", "unicorn"];
 export const studentRegistrationSchema = z.object({
   ten: z
     .string()
+    .trim()
     .min(2, "Họ và tên phải có ít nhất 2 ký tự")
     .max(100, "Họ và tên không hợp lệ")
     .regex(/^[a-zA-ZÀ-ỹ\s]+$/, "Tên chỉ được chứa chữ cái và khoảng trắng"),
 
   mssv: z
     .string()
+    .trim()
     .min(1, "MSSV không được để trống")
     .regex(/^(SE|SA|SS)\d{6}$/i, "MSSV không đúng định dạng")
     .transform((val) => val.toUpperCase()),
 
   sdt: z
     .string()
+    .trim()
     .min(1, "Số điện thoại không được để trống")
     .refine(
       (val) => {
@@ -30,12 +33,18 @@ export const studentRegistrationSchema = z.object({
   lop: z
     .string()
     .min(1, "Lớp không được để trống")
-    .regex(/^(10|[1-9])$/, "Lớp không hợp lệ"),
+    .refine((val) => {
+      const num = Number(val.trim());
+      return Number.isInteger(num) && num >= 1 && num <= 10;
+    }, "Lớp không hợp lệ"),
 
   daiDoi: z
     .string()
     .min(1, "Đại đội không được để trống")
-    .regex(/^[1-4]$/, "Đại đội không hợp lệ"),
+    .refine((val) => {
+      const num = Number(val.trim());
+      return Number.isInteger(num) && num >= 1 && num <= 4;
+    }, "Đại đội không hợp lệ"),
 
   nha: z
     .string()

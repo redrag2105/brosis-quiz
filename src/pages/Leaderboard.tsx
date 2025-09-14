@@ -43,6 +43,15 @@ const transformApiData = (apiEntry: ApiLeaderboardEntry): StudentRanking => ({
   },
 });
 
+function toTitleCase(str: string): string {
+  return str
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export default function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState<StudentRanking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -222,8 +231,8 @@ export default function Leaderboard() {
       : `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   };
 
-  const toTitleCase = (str: string) =>
-    str.length ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+  // const toTitleCase = (str: string) =>
+  //   str.length ? str.charAt(0).toUpperCase() + str.slice(1) : str;
 
   const floatingElements = [...Array(8)].map((_, i) => ({
     id: i,
@@ -370,7 +379,7 @@ export default function Leaderboard() {
                           />
                           <div className="flex-1 min-w-0">
                             <div className="text-white font-semibold leading-tight max-w-[12rem] truncate">
-                              {searchEntry.student.full_name}
+                              {toTitleCase(searchEntry.student.full_name)}
                             </div>
                             <div className="text-xs text-slate-400">
                               {searchEntry.student_id} • Lớp{" "}
@@ -441,7 +450,7 @@ export default function Leaderboard() {
                                 className="border border-slate-600 rounded-full"
                               />
                               <span className="max-w-[18rem] truncate">
-                                {searchEntry.student.full_name}
+                                {toTitleCase(searchEntry.student.full_name)}
                               </span>
                             </div>
                             <div className="text-sm text-slate-400">
@@ -565,7 +574,7 @@ export default function Leaderboard() {
                                     </div>
                                   </div>
                                   <div className="text-white font-semibold text-sm text-center flex flex-col justify-center px-1 break-words min-h-[2.5rem] leading-tight mt-3 w-30">
-                                    {entry.student.full_name}
+                                    {toTitleCase(entry.student.full_name)}
                                   </div>
                                   <span
                                     className={`px-2 py-0.5 text-[11px] mt-1 rounded-full font-medium font-mono ${getRankGradient(
@@ -679,7 +688,7 @@ export default function Leaderboard() {
                                 </div>
                               </div>
                               <div className="mt-3 text-white font-semibold text-base max-w-[14rem] truncate">
-                                {entry.student.full_name}
+                                {toTitleCase(entry.student.full_name)}
                               </div>
                               <span
                                 className={`mt-1 px-3 py-1 rounded-full text-xs font-medium font-mono ${getRankGradient(
@@ -737,7 +746,7 @@ export default function Leaderboard() {
                         />
                         <div className="flex-1 min-w-0">
                           <div className="text-white font-semibold leading-tight max-w-[12rem] truncate">
-                            {entry.student.full_name}
+                            {toTitleCase(entry.student.full_name)}
                           </div>
                           <div className="text-xs text-slate-400">
                             {entry.student_id} • Lớp {entry.student.class_code}{" "}
@@ -823,7 +832,7 @@ export default function Leaderboard() {
                                   className="border border-slate-600 rounded-full"
                                 />
                                 <span className="max-w-[18rem] truncate">
-                                  {entry.student.full_name}
+                                  {toTitleCase(entry.student.full_name)}
                                 </span>
                               </div>
                               <div className="text-sm text-slate-400">
